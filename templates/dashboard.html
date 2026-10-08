@@ -1,0 +1,321 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - AI Urban Farming Assistant{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- Hero Welcome Banner -->
+    <div class="bg-gradient-to-r from-forest-900 via-forest-800 to-forest-700 rounded-3xl p-6 sm:p-8 text-white shadow-lg relative overflow-hidden">
+        <div class="absolute right-0 bottom-0 opacity-10 translate-x-8 translate-y-8 pointer-events-none">
+            <i class="fa-solid fa-plant-wilt text-9xl"></i>
+        </div>
+        <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div>
+                <div class="inline-flex items-center space-x-2 bg-emerald-500/20 text-emerald-200 border border-emerald-400/30 px-3 py-1 rounded-full text-xs font-semibold mb-3">
+                    <i class="fa-solid fa-leaf"></i>
+                    <span>Urban Micro-Farm Active</span>
+                </div>
+                <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight">
+                    Welcome back, {{ current_user.username }}! 🌱
+                </h1>
+                <p class="text-sm text-forest-200 mt-1 max-w-xl">
+                    Here is your personal urban garden health, climate data, and smart watering status for today.
+                </p>
+            </div>
+
+            <!-- Quick Action Hub -->
+            <div class="flex flex-wrap items-center gap-3">
+                <a href="{{ url_for('plants_view') }}" class="inline-flex items-center space-x-2 px-4 py-2.5 bg-white text-forest-900 hover:bg-forest-50 font-semibold rounded-xl text-sm shadow transition">
+                    <i class="fa-solid fa-plus text-emerald-600"></i>
+                    <span>Add Plant</span>
+                </a>
+                <a href="{{ url_for('diagnose') }}" class="inline-flex items-center space-x-2 px-4 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-white font-semibold rounded-xl text-sm shadow transition">
+                    <i class="fa-solid fa-microscope"></i>
+                    <span>Diagnose Leaf</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Metric Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Metric 1: Total Plants -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm flex items-center justify-between">
+            <div>
+                <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">My Plants</p>
+                <h3 class="text-2xl font-bold text-slate-800 mt-1">{{ total_plants }}</h3>
+                <p class="text-xs text-forest-600 font-medium mt-1">
+                    <i class="fa-solid fa-seedling mr-1"></i> In cultivation
+                </p>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-forest-50 text-forest-600 flex items-center justify-center text-xl">
+                <i class="fa-solid fa-tree"></i>
+            </div>
+        </div>
+
+        <!-- Metric 2: Urgent Watering Alerts -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm flex items-center justify-between">
+            <div>
+                <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Watering Due Today</p>
+                <h3 class="text-2xl font-bold {{ 'text-red-600' if urgent_water_count > 0 else 'text-emerald-600' }} mt-1">
+                    {{ urgent_water_count }}
+                </h3>
+                <p class="text-xs font-medium mt-1 {{ 'text-red-500' if urgent_water_count > 0 else 'text-slate-400' }}">
+                    <i class="fa-solid {{ 'fa-triangle-exclamation text-red-500' if urgent_water_count > 0 else 'fa-check text-emerald-500' }} mr-1"></i>
+                    {{ 'Requires hydration today' if urgent_water_count > 0 else 'All plants well-hydrated' }}
+                </p>
+            </div>
+            <div class="w-12 h-12 rounded-xl {{ 'bg-red-50 text-red-500' if urgent_water_count > 0 else 'bg-emerald-50 text-emerald-600' }} flex items-center justify-center text-xl">
+                <i class="fa-solid fa-droplet"></i>
+            </div>
+        </div>
+
+        <!-- Metric 3: Live Climate / Open-Meteo -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm flex items-center justify-between">
+            <div>
+                <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Weather ({{ weather.city }})</p>
+                <h3 class="text-2xl font-bold text-slate-800 mt-1">{{ weather.temperature }}°C</h3>
+                <p class="text-xs text-slate-500 font-medium mt-1">
+                    <i class="fa-solid fa-droplet text-blue-400 mr-1"></i> {{ weather.humidity }}% Humidity
+                </p>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-500 flex items-center justify-center text-xl">
+                <i class="fa-solid fa-sun"></i>
+            </div>
+        </div>
+
+        <!-- Metric 4: AI Health Diagnoses -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm flex items-center justify-between">
+            <div>
+                <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Health Checks</p>
+                <h3 class="text-2xl font-bold text-slate-800 mt-1">{{ recent_logs|length }}</h3>
+                <p class="text-xs text-forest-600 font-medium mt-1">
+                    <i class="fa-solid fa-shield-virus mr-1"></i> MobileNetV2 active
+                </p>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center text-xl">
+                <i class="fa-solid fa-heart-pulse"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Grid: Plants Status & Weather / Health Insights -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <!-- Left 2 Cols: Plants Overview & Smart Watering Table -->
+        <div class="lg:col-span-2 space-y-6">
+            <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+                <div class="p-5 border-b border-slate-100 flex items-center justify-between flex-wrap gap-2">
+                    <div class="flex items-center space-x-2.5">
+                        <div class="w-8 h-8 rounded-lg bg-forest-100 text-forest-700 flex items-center justify-center text-sm">
+                            <i class="fa-solid fa-list-check"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-base font-bold text-slate-800">My Urban Plants & Irrigation Status</h2>
+                            <p class="text-xs text-slate-500">Live recommendations adjusted for container drying & weather</p>
+                        </div>
+                    </div>
+                    <a href="{{ url_for('plants_view') }}" class="text-xs font-semibold text-forest-700 hover:text-forest-800 flex items-center space-x-1">
+                        <span>View All & Add</span>
+                        <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                    </a>
+                </div>
+
+                {% if plants %}
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse text-sm">
+                        <thead>
+                            <tr class="bg-slate-50/70 border-b border-slate-100 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                                <th class="py-3 px-4">Plant</th>
+                                <th class="py-3 px-4">Location</th>
+                                <th class="py-3 px-4">Watering Status</th>
+                                <th class="py-3 px-4">Reasoning</th>
+                                <th class="py-3 px-4 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            {% for plant in plants %}
+                            <tr class="hover:bg-slate-50/50 transition">
+                                <td class="py-3.5 px-4">
+                                    <div class="font-bold text-slate-800">{{ plant.plant_name }}</div>
+                                    <div class="text-xs text-slate-400">{{ plant.plant_type }}</div>
+                                </td>
+                                <td class="py-3.5 px-4 text-xs font-medium text-slate-600">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-md bg-slate-100 text-slate-700">
+                                        <i class="fa-solid fa-location-dot mr-1 text-[10px] text-slate-400"></i>
+                                        {{ plant.location_type }}
+                                    </span>
+                                </td>
+                                <td class="py-3.5 px-4">
+                                    {% set rec = plant.watering_rec %}
+                                    {% if rec.status == 'Water today' %}
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800 border border-red-200">
+                                            <i class="fa-solid fa-droplet mr-1.5 text-red-500"></i>
+                                            Water today
+                                        </span>
+                                    {% elif rec.status == 'Water tomorrow' %}
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 border border-amber-200">
+                                            <i class="fa-solid fa-clock mr-1.5 text-amber-500"></i>
+                                            Water tomorrow
+                                        </span>
+                                    {% else %}
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                            <i class="fa-solid fa-circle-check mr-1.5 text-emerald-500"></i>
+                                            No watering needed today
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td class="py-3.5 px-4 text-xs text-slate-500 max-w-xs truncate" title="{{ plant.watering_rec.rationale }}">
+                                    {{ plant.watering_rec.rationale }}
+                                </td>
+                                <td class="py-3.5 px-4 text-right whitespace-nowrap">
+                                    <div class="flex items-center justify-end space-x-1.5">
+                                        <!-- Water action -->
+                                        <form method="POST" action="{{ url_for('water_plant', plant_id=plant.id) }}" class="inline">
+                                            <button type="submit" title="Mark as Watered Today"
+                                                class="px-2.5 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 font-medium rounded-lg text-xs border border-blue-200 transition">
+                                                <i class="fa-solid fa-shower mr-1"></i> Watered
+                                            </button>
+                                        </form>
+                                        <!-- Diagnose action -->
+                                        <a href="{{ url_for('diagnose', plant_id=plant.id) }}" title="Run AI Diagnosis"
+                                            class="px-2.5 py-1 bg-forest-50 hover:bg-forest-100 text-forest-700 font-medium rounded-lg text-xs border border-forest-200 transition">
+                                            <i class="fa-solid fa-camera mr-1"></i> Check
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="p-8 text-center">
+                    <div class="w-16 h-16 rounded-2xl bg-forest-50 text-forest-600 flex items-center justify-center mx-auto mb-3 text-2xl">
+                        <i class="fa-solid fa-seedling"></i>
+                    </div>
+                    <h3 class="text-base font-bold text-slate-800">Your Garden is Empty</h3>
+                    <p class="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
+                        Add your first balcony or terrace plant to receive AI health diagnoses and weather-adjusted watering schedules.
+                    </p>
+                    <a href="{{ url_for('plants_view') }}" class="inline-flex items-center space-x-2 px-4 py-2 mt-4 bg-forest-600 hover:bg-forest-700 text-white font-semibold rounded-xl text-xs shadow transition">
+                        <i class="fa-solid fa-plus"></i>
+                        <span>Add Your First Plant</span>
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Urban Farming Quick Guide / Tips -->
+            <div class="bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-100 rounded-2xl p-5 shadow-sm">
+                <div class="flex items-start space-x-3">
+                    <div class="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center flex-shrink-0 text-sm">
+                        <i class="fa-solid fa-lightbulb"></i>
+                    </div>
+                    <div>
+                        <h4 class="text-sm font-bold text-emerald-900">Urban Container Gardening Insight</h4>
+                        <p class="text-xs text-emerald-800 mt-1 leading-relaxed">
+                            Container plants on balconies and terraces experience higher soil temperature swings and breeze-induced transpiration. Always water early in the morning before midday peak sun, and ensure drainage trays are emptied after 30 minutes to prevent root rot.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right 1 Col: Weather Widget & Recent Diagnoses -->
+        <div class="space-y-6">
+
+            <!-- Open-Meteo Live Weather Card -->
+            <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-sm font-bold text-slate-800 flex items-center space-x-2">
+                        <i class="fa-solid fa-cloud-sun text-amber-500"></i>
+                        <span>Local Microclimate</span>
+                    </h3>
+                    <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
+                        {{ weather.city }}
+                    </span>
+                </div>
+
+                <div class="flex items-center justify-between py-2">
+                    <div>
+                        <span class="text-3xl font-extrabold text-slate-800">{{ weather.temperature }}°C</span>
+                        <p class="text-xs text-slate-500 mt-0.5 font-medium">{{ weather.condition }}</p>
+                    </div>
+                    <div class="w-14 h-14 rounded-2xl bg-amber-50 text-amber-500 flex items-center justify-center text-3xl">
+                        {% if weather.icon == 'cloud-rain' %}
+                            <i class="fa-solid fa-cloud-rain text-blue-500"></i>
+                        {% elif weather.icon == 'cloud' %}
+                            <i class="fa-solid fa-cloud text-slate-400"></i>
+                        {% else %}
+                            <i class="fa-solid fa-sun text-amber-500"></i>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2 mt-4 pt-4 border-t border-slate-100 text-xs text-slate-600">
+                    <div class="bg-slate-50 p-2.5 rounded-xl">
+                        <div class="text-slate-400 font-medium">Humidity</div>
+                        <div class="font-bold text-slate-800 text-sm mt-0.5">{{ weather.humidity }}%</div>
+                    </div>
+                    <div class="bg-slate-50 p-2.5 rounded-xl">
+                        <div class="text-slate-400 font-medium">Precipitation</div>
+                        <div class="font-bold text-slate-800 text-sm mt-0.5">{{ weather.precipitation }} mm</div>
+                    </div>
+                </div>
+
+                <a href="{{ url_for('weather_view') }}" class="mt-4 block text-center text-xs font-semibold text-forest-700 hover:text-forest-800 bg-forest-50 py-2 rounded-xl transition">
+                    Full Weather & Irrigation Forecast &rarr;
+                </a>
+            </div>
+
+            <!-- Recent AI Disease Diagnoses -->
+            <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-sm font-bold text-slate-800 flex items-center space-x-2">
+                        <i class="fa-solid fa-microscope text-forest-600"></i>
+                        <span>Recent Health Logs</span>
+                    </h3>
+                    <a href="{{ url_for('history') }}" class="text-xs text-forest-700 font-semibold hover:underline">
+                        History &rarr;
+                    </a>
+                </div>
+
+                {% if recent_logs %}
+                <div class="space-y-3">
+                    {% for log in recent_logs %}
+                    <div class="p-3 rounded-xl bg-slate-50 border border-slate-100 text-xs space-y-1">
+                        <div class="flex items-center justify-between">
+                            <span class="font-bold text-slate-800 truncate">{{ log.plant_name }}</span>
+                            <span class="px-2 py-0.5 rounded-full font-semibold {{ 'bg-emerald-100 text-emerald-800' if 'Healthy' in log.disease else 'bg-red-100 text-red-800' }}">
+                                {{ log.confidence }}% conf
+                            </span>
+                        </div>
+                        <div class="text-slate-600 font-medium">
+                            <i class="fa-solid fa-virus-covid mr-1 text-slate-400"></i>
+                            {{ log.disease }}
+                        </div>
+                        <div class="text-[11px] text-slate-400 pt-1">
+                            {{ log.diagnosis_date.split(' ')[0] if log.diagnosis_date else 'Recent' }}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-6 text-xs text-slate-400">
+                    <i class="fa-solid fa-notes-medical text-2xl text-slate-300 mb-2 block"></i>
+                    No leaf diagnoses recorded yet.<br>
+                    <a href="{{ url_for('diagnose') }}" class="text-forest-600 font-semibold underline mt-1 inline-block">
+                        Run your first diagnosis
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}

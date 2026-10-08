@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+
+{% block title %}Plant Health History - AI Urban Farming Assistant{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- Header & Filter -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-extrabold text-slate-800 tracking-tight flex items-center space-x-2.5">
+                <i class="fa-solid fa-notes-medical text-forest-600"></i>
+                <span>Plant Health & Diagnosis History</span>
+            </h1>
+            <p class="text-xs text-slate-500 mt-1">
+                Track chronological AI disease logs, confidence scores, and past treatments for your urban garden.
+            </p>
+        </div>
+
+        <!-- Filter By Plant -->
+        {% if plants %}
+        <form method="GET" action="{{ url_for('history') }}" class="flex items-center space-x-2">
+            <label for="plant_id" class="text-xs font-semibold text-slate-600 whitespace-nowrap">Filter Plant:</label>
+            <select name="plant_id" id="plant_id" onchange="this.form.submit()"
+                class="px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-forest-600 shadow-sm">
+                <option value="">All Plants ({{ logs|length }} logs)</option>
+                {% for p in plants %}
+                <option value="{{ p.id }}" {% if selected_plant_id == p.id %}selected{% endif %}>
+                    {{ p.plant_name }} ({{ p.plant_type }})
+                </option>
+                {% endfor %}
+            </select>
+        </form>
+        {% endif %}
+    </div>
+
+    <!-- History Cards / Table -->
+    {% if logs %}
+    <div class="space-y-4">
+        {% for log in logs %}
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 hover:shadow-md transition">
+            <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+
+                <!-- Left: Thumbnail & Plant Meta -->
+                <div class="flex items-start sm:items-center space-x-4">
+                    {% if log.image_path %}
+                    <img src="{{ url_for('static', filename=log.image_path) }}" alt="Diagnosed Leaf"
+                        class="w-16 h-16 sm:w-20 sm:h-20 rounded-xl object-cover shadow border border-slate-200 flex-shrink-0">
+                    {% else %}
+                    <div class="w-16 h-16 rounded-xl bg-forest-50 text-forest-600 flex items-center justify-center text-xl flex-shrink-0">
+                        <i class="fa-solid fa-leaf"></i>
+                    </div>
+                    {% endif %}
+
+                    <div>
+                        <div class="flex items-center space-x-2 mb-1">
+                            <span class="text-xs font-bold text-slate-800">{{ log.plant_name }}</span>
+                            <span class="text-[11px] px-2 py-0.5 rounded bg-slate-100 text-slate-600 font-medium">
+                                {{ log.plant_type }} &bull; {{ log.location_type }}
+                            </span>
+                        </div>
+                        <h3 class="text-base font-bold text-slate-900 leading-snug">
+                            {{ log.disease }}
+                        </h3>
+                        <p class="text-xs text-slate-400 mt-0.5">
+                            <i class="fa-regular fa-clock mr-1"></i> {{ log.diagnosis_date }}
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Right: Confidence & Details Toggle -->
+                <div class="flex items-center space-x-3 self-end md:self-auto">
+                    <div class="text-right">
+                        <span class="text-xs font-semibold text-slate-400 block">AI Confidence</span>
+                        <span class="text-lg font-extrabold {% if log.confidence >= 75 %}text-emerald-600{% elif log.confidence >= 65 %}text-amber-600{% else %}text-red-600{% endif %}">
+                            {{ log.confidence }}%
+                        </span>
+                    </div>
+
+                    <button type="button" onclick="toggleDetails('details-{{ log.id }}')"
+                        class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition flex items-center space-x-1">
+                        <span>Details</span>
+                        <i class="fa-solid fa-chevron-down text-[10px]"></i>
+                    </button>
+                </div>
+
+            </div>
+
+            <!-- Expandable Clinical Details Section -->
+            <div id="details-{{ log.id }}" class="hidden mt-4 pt-4 border-t border-slate-100 space-y-3 text-xs animate-in fade-in duration-150">
+                {% if log.notes %}
+                <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                    <span class="font-bold text-slate-700 block mb-0.5">Gardener Notes:</span>
+                    <p class="text-slate-600">{{ log.notes }}</p>
+                </div>
+                {% endif %}
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div class="bg-blue-50/50 p-3 rounded-xl border border-blue-100">
+                        <span class="font-bold text-blue-900 block mb-1">
+                            <i class="fa-solid fa-magnifying-glass mr-1"></i> Symptoms:
+                        </span>
+                        <p class="text-blue-950 text-xs leading-relaxed">{{ log.symptoms or 'No symptoms recorded' }}</p>
+                    </div>
+
+                    <div class="bg-emerald-50/50 p-3 rounded-xl border border-emerald-100">
+                        <span class="font-bold text-emerald-900 block mb-1">
+                            <i class="fa-solid fa-spray-can-sparkles mr-1"></i> Treatment:
+                        </span>
+                        <p class="text-emerald-950 text-xs leading-relaxed">{{ log.treatment or 'No treatment recorded' }}</p>
+                    </div>
+
+                    <div class="bg-teal-50/50 p-3 rounded-xl border border-teal-100">
+                        <span class="font-bold text-teal-900 block mb-1">
+                            <i class="fa-solid fa-shield-halved mr-1"></i> Prevention:
+                        </span>
+                        <p class="text-teal-950 text-xs leading-relaxed">{{ log.prevention or 'No prevention recorded' }}</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-12 text-center max-w-lg mx-auto">
+        <div class="w-16 h-16 rounded-2xl bg-forest-50 text-forest-600 flex items-center justify-center mx-auto mb-3 text-2xl">
+            <i class="fa-solid fa-notes-medical"></i>
+        </div>
+        <h3 class="text-base font-bold text-slate-800">No Diagnosis Records Found</h3>
+        <p class="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
+            Take a photo of any suspect tomato or plant leaf to classify diseases and save diagnosis history here.
+        </p>
+        <a href="{{ url_for('diagnose') }}" class="inline-flex items-center space-x-2 px-4 py-2 mt-4 bg-forest-600 hover:bg-forest-700 text-white font-semibold rounded-xl text-xs shadow transition">
+            <i class="fa-solid fa-microscope"></i>
+            <span>Run New Diagnosis</span>
+        </a>
+    </div>
+    {% endif %}
+
+</div>
+
+<script>
+    function toggleDetails(id) {
+        const el = document.getElementById(id);
+        if (el.classList.contains('hidden')) {
+            el.classList.remove('hidden');
+        } else {
+            el.classList.add('hidden');
+        }
+    }
+</script>
+{% endblock %}

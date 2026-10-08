@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+
+{% block title %}Create Account - AI Urban Farming Assistant{% endblock %}
+
+{% block content %}
+<div class="min-h-[75vh] flex items-center justify-center py-8">
+    <div class="max-w-md w-full bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden">
+        <!-- Card Header -->
+        <div class="bg-gradient-to-r from-forest-800 to-forest-700 px-8 py-8 text-center text-white relative">
+            <div class="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center mx-auto mb-3 backdrop-blur-sm border border-white/20">
+                <i class="fa-solid fa-user-plus text-3xl text-emerald-300"></i>
+            </div>
+            <h2 class="text-2xl font-bold tracking-tight">Create Urban Farmer Account</h2>
+            <p class="text-xs text-forest-200 mt-1">Start monitoring your balcony, terrace or home garden</p>
+        </div>
+
+        <!-- Form Body -->
+        <div class="p-8">
+            <form method="POST" action="{{ url_for('register') }}" onsubmit="return validateRegisterForm()" class="space-y-4">
+                <div>
+                    <label for="username" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+                        Username
+                    </label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
+                            <i class="fa-solid fa-user"></i>
+                        </span>
+                        <input type="text" id="username" name="username" value="{{ username or '' }}" required autofocus minlength="3"
+                            placeholder="e.g. rooftop_grower"
+                            class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-forest-600 focus:bg-white transition">
+                    </div>
+                    <span class="text-[11px] text-slate-400 mt-1 block">At least 3 characters.</span>
+                </div>
+
+                <div>
+                    <label for="email" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+                        Email Address
+                    </label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
+                            <i class="fa-solid fa-envelope"></i>
+                        </span>
+                        <input type="email" id="email" name="email" value="{{ email or '' }}" required
+                            placeholder="e.g. farmer@urban.com"
+                            class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-forest-600 focus:bg-white transition">
+                    </div>
+                </div>
+
+                <div>
+                    <label for="password" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+                        Password
+                    </label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
+                            <i class="fa-solid fa-lock"></i>
+                        </span>
+                        <input type="password" id="password" name="password" required minlength="6"
+                            placeholder="Minimum 6 characters"
+                            class="w-full pl-10 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-forest-600 focus:bg-white transition">
+                        <button type="button" onclick="togglePasswordVisibility('password', this)" class="absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-400 hover:text-slate-600">
+                            <i class="fa-solid fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div>
+                    <label for="confirm_password" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+                        Confirm Password
+                    </label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
+                            <i class="fa-solid fa-lock-open"></i>
+                        </span>
+                        <input type="password" id="confirm_password" name="confirm_password" required minlength="6"
+                            placeholder="Re-enter your password"
+                            class="w-full pl-10 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-forest-600 focus:bg-white transition">
+                        <button type="button" onclick="togglePasswordVisibility('confirm_password', this)" class="absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-400 hover:text-slate-600">
+                            <i class="fa-solid fa-eye"></i>
+                        </button>
+                    </div>
+                    <div id="password_match_feedback" class="text-[11px] text-red-500 mt-1 hidden font-medium">
+                        Passwords do not match.
+                    </div>
+                </div>
+
+                <!-- Security Note -->
+                <div class="bg-forest-50 border border-forest-200 rounded-xl p-3 flex items-start space-x-2.5 text-xs text-forest-800">
+                    <i class="fa-solid fa-shield-halved text-forest-600 mt-0.5"></i>
+                    <span>Passwords are protected with modern salted Scrypt encryption. Your urban garden data is isolated and private.</span>
+                </div>
+
+                <button type="submit"
+                    class="w-full py-3 px-4 bg-forest-600 hover:bg-forest-700 text-white font-semibold rounded-xl text-sm shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center space-x-2 mt-2">
+                    <i class="fa-solid fa-check"></i>
+                    <span>Register & Get Started</span>
+                </button>
+            </form>
+
+            <div class="mt-6 pt-6 border-t border-slate-100 text-center text-sm text-slate-600">
+                Already have an account?
+                <a href="{{ url_for('login') }}" class="font-semibold text-forest-700 hover:text-forest-800 underline ml-1">
+                    Sign in here
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function togglePasswordVisibility(fieldId, btn) {
+        const input = document.getElementById(fieldId);
+        const icon = btn.querySelector('i');
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            input.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    }
+
+    function validateRegisterForm() {
+        const pwd = document.getElementById('password').value;
+        const confirm = document.getElementById('confirm_password').value;
+        const feedback = document.getElementById('password_match_feedback');
+
+        if (pwd !== confirm) {
+            feedback.classList.remove('hidden');
+            return false;
+        }
+        feedback.classList.add('hidden');
+        return true;
+    }
+
+    document.getElementById('confirm_password').addEventListener('input', function() {
+        const pwd = document.getElementById('password').value;
+        const feedback = document.getElementById('password_match_feedback');
+        if (this.value && pwd !== this.value) {
+            feedback.classList.remove('hidden');
+        } else {
+            feedback.classList.add('hidden');
+        }
+    });
+</script>
+{% endblock %}

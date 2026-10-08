@@ -1,0 +1,354 @@
+{% extends "base.html" %}
+
+{% block title %}AI Leaf Disease Diagnosis - AI Urban Farming Assistant{% endblock %}
+
+{% block content %}
+<div class="space-y-6 max-w-5xl mx-auto">
+
+    <!-- Header Banner -->
+    <div class="bg-gradient-to-r from-forest-900 to-forest-800 rounded-3xl p-6 sm:p-8 text-white shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <div class="inline-flex items-center space-x-2 bg-emerald-500/20 text-emerald-200 border border-emerald-400/30 px-3 py-1 rounded-full text-xs font-semibold mb-2">
+                <i class="fa-solid fa-microchip"></i>
+                <span>MobileNetV2 Deep Learning</span>
+            </div>
+            <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight">AI Leaf Disease Diagnosis</h1>
+            <p class="text-xs sm:text-sm text-forest-200 mt-1 max-w-xl">
+                Upload a photo of your tomato or urban crop leaf. The AI will classify pathogens, evaluate confidence, and provide actionable balcony treatment strategies.
+            </p>
+        </div>
+        <div class="hidden sm:flex w-16 h-16 rounded-2xl bg-white/10 text-emerald-300 items-center justify-center text-3xl border border-white/20">
+            <i class="fa-solid fa-microscope"></i>
+        </div>
+    </div>
+
+    <!-- Main Section: Form & Diagnosis Result -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        <!-- Left Column: Upload Form & Options (5 or 6 cols) -->
+        <div class="{% if result %}lg:col-span-5{% else %}lg:col-span-12 max-w-2xl mx-auto w-full{% endif %} space-y-5">
+            <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+                <h3 class="text-base font-bold text-slate-800 mb-4 flex items-center space-x-2">
+                    <i class="fa-solid fa-camera text-forest-600"></i>
+                    <span>Diagnose Plant Leaf</span>
+                </h3>
+
+                {% if plants %}
+                <form method="POST" action="{{ url_for('diagnose') }}" enctype="multipart/form-data" id="diagForm" class="space-y-4">
+                    <!-- Plant Selector -->
+                    <div>
+                        <label for="plant_id" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+                            Select Plant to Diagnose *
+                        </label>
+                        <select id="plant_id" name="plant_id" required
+                            class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-forest-600 focus:bg-white transition">
+                            {% for plant in plants %}
+                            <option value="{{ plant.id }}" {% if selected_plant_id == plant.id or (selected_plant and selected_plant.id == plant.id) %}selected{% endif %}>
+                                {{ plant.plant_name }} ({{ plant.plant_type }} - {{ plant.location_type }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Drag & Drop / File Input -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+                            Leaf Image *
+                        </label>
+                        <div id="dropZone"
+                            class="border-2 border-dashed border-slate-300 hover:border-forest-500 rounded-2xl p-6 text-center bg-slate-50/50 hover:bg-forest-50/30 transition cursor-pointer relative">
+                            <input type="file" id="leaf_image" name="leaf_image" accept="image/*" class="hidden" onchange="previewSelectedImage(event)">
+                            <input type="hidden" id="sample_image" name="sample_image" value="">
+
+                            <!-- Empty Preview State -->
+                            <div id="uploadPrompt" class="space-y-2">
+                                <div class="w-12 h-12 rounded-xl bg-forest-100 text-forest-600 flex items-center justify-center mx-auto text-xl">
+                                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                                </div>
+                                <div class="text-xs text-slate-600 font-medium">
+                                    <span class="text-forest-700 font-bold underline">Click to upload</span> or drag and drop leaf photo
+                                </div>
+                                <p class="text-[11px] text-slate-400">Supports JPG, PNG, WEBP (Max 16MB)</p>
+                            </div>
+
+                            <!-- Live Image Preview State -->
+                            <div id="imagePreviewContainer" class="hidden space-y-2">
+                                <img id="imagePreview" src="" alt="Leaf Preview" class="max-h-48 rounded-xl mx-auto shadow border border-slate-200 object-cover">
+                                <div class="text-xs font-medium text-slate-600 flex items-center justify-center space-x-2">
+                                    <span id="previewFilename">image.jpg</span>
+                                    <button type="button" onclick="clearSelectedImage(event)" class="text-red-500 hover:text-red-700 text-xs font-bold underline">
+                                        Remove
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Instant Test Samples -->
+                    <div>
+                        <div class="flex items-center justify-between mb-1.5">
+                            <span class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                                Or Test With Sample Leaf Images:
+                            </span>
+                        </div>
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                            <button type="button" onclick="selectSample('healthy_tomato.jpg', 'Healthy Tomato Leaf')"
+                                class="sample-btn p-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-forest-50 text-[11px] font-medium text-slate-700 flex flex-col items-center space-y-1 transition text-center">
+                                <span class="text-base">🌿</span>
+                                <span class="leading-tight">Healthy</span>
+                            </button>
+                            <button type="button" onclick="selectSample('early_blight.jpg', 'Early Blight Sample')"
+                                class="sample-btn p-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-forest-50 text-[11px] font-medium text-slate-700 flex flex-col items-center space-y-1 transition text-center">
+                                <span class="text-base">🍂</span>
+                                <span class="leading-tight">Early Blight</span>
+                            </button>
+                            <button type="button" onclick="selectSample('bacterial_spot.jpg', 'Bacterial Spot Sample')"
+                                class="sample-btn p-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-forest-50 text-[11px] font-medium text-slate-700 flex flex-col items-center space-y-1 transition text-center">
+                                <span class="text-base">🔬</span>
+                                <span class="leading-tight">Bacterial Spot</span>
+                            </button>
+                            <button type="button" onclick="selectSample('uncertain_leaf.jpg', 'Ambiguous/Uncertain Leaf')"
+                                class="sample-btn p-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-forest-50 text-[11px] font-medium text-slate-700 flex flex-col items-center space-y-1 transition text-center">
+                                <span class="text-base">⚠️</span>
+                                <span class="leading-tight">Uncertain</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Optional Notes -->
+                    <div>
+                        <label for="notes" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                            Observation Notes (Optional)
+                        </label>
+                        <input type="text" id="notes" name="notes" placeholder="e.g. Upper leaves curling, noticed small bugs..."
+                            class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-forest-600 focus:bg-white transition">
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" id="submitBtn"
+                        class="w-full py-3 px-4 bg-forest-600 hover:bg-forest-700 text-white font-semibold rounded-xl text-sm shadow-md transition flex items-center justify-center space-x-2">
+                        <i class="fa-solid fa-microscope"></i>
+                        <span>Run MobileNetV2 AI Diagnosis</span>
+                    </button>
+                </form>
+                {% else %}
+                <div class="p-6 text-center text-xs text-slate-500">
+                    <p>You need to register at least one plant before running a diagnosis.</p>
+                    <a href="{{ url_for('plants_view') }}" class="inline-block mt-3 px-4 py-2 bg-forest-600 text-white rounded-xl font-semibold shadow">
+                        Add a Plant Now
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Right Column: AI Diagnosis Results (7 cols if result is present) -->
+        {% if result %}
+        <div class="lg:col-span-7 space-y-5 animate-in fade-in duration-200">
+            <div class="bg-white rounded-2xl border border-slate-100 shadow-lg overflow-hidden">
+
+                <!-- Result Header with Image & Title -->
+                <div class="p-6 border-b border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div class="flex items-center space-x-4">
+                        {% if result.image_url %}
+                        <img src="{{ result.image_url }}" alt="Diagnosed Leaf" class="w-20 h-20 rounded-2xl object-cover shadow border border-slate-200 flex-shrink-0">
+                        {% endif %}
+                        <div>
+                            <div class="flex items-center space-x-2 mb-1">
+                                <span class="px-2.5 py-0.5 rounded-full text-xs font-bold {{ 'bg-emerald-100 text-emerald-800' if result.status == 'Healthy' else 'bg-red-100 text-red-800' }}">
+                                    {{ result.status }}
+                                </span>
+                                <span class="text-xs font-semibold px-2 py-0.5 rounded-md bg-slate-100 text-slate-600">
+                                    Severity: {{ result.severity }}
+                                </span>
+                            </div>
+                            <h2 class="text-xl font-extrabold text-slate-800 leading-tight">
+                                {{ result.disease_name }}
+                            </h2>
+                            <p class="text-xs text-slate-500 mt-0.5">
+                                Plant: <strong class="text-slate-700">{{ selected_plant.plant_name if selected_plant else 'Urban Crop' }}</strong>
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Confidence Gauge -->
+                    <div class="bg-slate-50 p-3 rounded-2xl border border-slate-100 text-center min-w-[110px]">
+                        <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider block">Confidence</span>
+                        <span class="text-2xl font-extrabold {% if result.confidence >= 75 %}text-emerald-600{% elif result.confidence >= 65 %}text-amber-600{% else %}text-red-600{% endif %}">
+                            {{ result.confidence }}%
+                        </span>
+                        <div class="w-full bg-slate-200 h-1.5 rounded-full mt-1 overflow-hidden">
+                            <div class="h-full rounded-full {% if result.confidence >= 75 %}bg-emerald-500{% elif result.confidence >= 65 %}bg-amber-500{% else %}bg-red-500{% endif %}"
+                                 style="width: {{ result.confidence }}%;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Low Confidence Warning Banner (Required Feature) -->
+                {% if result.is_low_confidence %}
+                <div class="m-6 p-4 rounded-2xl bg-amber-50 border-2 border-amber-300 text-amber-950 flex items-start space-x-3.5 shadow-sm">
+                    <div class="text-2xl text-amber-600 mt-0.5">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                    </div>
+                    <div>
+                        <h4 class="text-sm font-bold text-amber-900">Prediction Uncertainty Warning</h4>
+                        <p class="text-xs text-amber-800 mt-1 leading-relaxed">
+                            {{ result.warning }}
+                        </p>
+                        <p class="text-[11px] text-amber-700 mt-1.5 font-medium">
+                            💡 Tip: Retake the photo in bright indirect sunlight, ensure the camera focuses sharply on the leaf spots, and review the symptoms checklist below.
+                        </p>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Detailed Treatment, Symptoms & Prevention Tabs -->
+                <div class="p-6 space-y-5">
+
+                    <!-- Symptoms -->
+                    <div class="bg-slate-50/70 rounded-2xl p-4 border border-slate-100">
+                        <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center space-x-2 mb-1.5">
+                            <i class="fa-solid fa-magnifying-glass text-blue-500"></i>
+                            <span>Clinical Symptoms</span>
+                        </h4>
+                        <p class="text-xs text-slate-700 leading-relaxed">
+                            {{ result.symptoms }}
+                        </p>
+                    </div>
+
+                    <!-- Treatment -->
+                    <div class="bg-emerald-50/60 rounded-2xl p-4 border border-emerald-100">
+                        <h4 class="text-xs font-bold text-emerald-900 uppercase tracking-wider flex items-center space-x-2 mb-1.5">
+                            <i class="fa-solid fa-spray-can-sparkles text-emerald-600"></i>
+                            <span>Recommended Treatment (Urban Friendly)</span>
+                        </h4>
+                        <p class="text-xs text-emerald-900 leading-relaxed font-medium">
+                            {{ result.treatment }}
+                        </p>
+                    </div>
+
+                    <!-- Prevention -->
+                    <div class="bg-teal-50/60 rounded-2xl p-4 border border-teal-100">
+                        <h4 class="text-xs font-bold text-teal-900 uppercase tracking-wider flex items-center space-x-2 mb-1.5">
+                            <i class="fa-solid fa-shield-halved text-teal-600"></i>
+                            <span>Balcony / Terrace Prevention Strategy</span>
+                        </h4>
+                        <p class="text-xs text-teal-900 leading-relaxed">
+                            {{ result.prevention }}
+                        </p>
+                    </div>
+
+                    <!-- Top 3 Model Predictions Breakdown -->
+                    {% if result.top_predictions %}
+                    <div class="pt-3 border-t border-slate-100">
+                        <h4 class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2.5">
+                            Model Probabilities Distribution
+                        </h4>
+                        <div class="space-y-2">
+                            {% for pred in result.top_predictions %}
+                            <div class="flex items-center justify-between text-xs">
+                                <span class="text-slate-700 font-medium truncate max-w-xs">{{ pred.disease }}</span>
+                                <div class="flex items-center space-x-2">
+                                    <div class="w-24 bg-slate-100 h-2 rounded-full overflow-hidden">
+                                        <div class="bg-forest-600 h-full rounded-full" style="width: {{ pred.confidence }}%;"></div>
+                                    </div>
+                                    <span class="font-bold text-slate-800 w-10 text-right">{{ pred.confidence }}%</span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Link to History -->
+                    <div class="pt-2 flex items-center justify-between">
+                        <span class="text-xs text-slate-400">Saved to plant health history automatically.</span>
+                        <a href="{{ url_for('history') }}" class="text-xs font-semibold text-forest-700 hover:text-forest-800 underline">
+                            View Diagnosis History &rarr;
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        {% endif %}
+
+    </div>
+
+</div>
+
+<script>
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('leaf_image');
+    const uploadPrompt = document.getElementById('uploadPrompt');
+    const previewContainer = document.getElementById('imagePreviewContainer');
+    const imagePreview = document.getElementById('imagePreview');
+    const previewFilename = document.getElementById('previewFilename');
+    const sampleInput = document.getElementById('sample_image');
+
+    // Click to open file picker
+    dropZone.addEventListener('click', (e) => {
+        if (e.target.tagName !== 'BUTTON') {
+            fileInput.click();
+        }
+    });
+
+    // Drag & Drop
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropZone.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            dropZone.classList.add('border-forest-500', 'bg-forest-50/50');
+        });
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('border-forest-500', 'bg-forest-50/50');
+        });
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+            fileInput.files = e.dataTransfer.files;
+            handleFile(fileInput.files[0]);
+        }
+    });
+
+    function previewSelectedImage(event) {
+        if (event.target.files && event.target.files[0]) {
+            handleFile(event.target.files[0]);
+        }
+    }
+
+    function handleFile(file) {
+        sampleInput.value = '';
+        previewFilename.textContent = file.name;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            imagePreview.src = e.target.result;
+            uploadPrompt.classList.add('hidden');
+            previewContainer.classList.remove('hidden');
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function clearSelectedImage(event) {
+        event.stopPropagation();
+        fileInput.value = '';
+        sampleInput.value = '';
+        imagePreview.src = '';
+        previewContainer.classList.add('hidden');
+        uploadPrompt.classList.remove('hidden');
+    }
+
+    function selectSample(filename, label) {
+        sampleInput.value = filename;
+        fileInput.value = '';
+        imagePreview.src = `/static/uploads/samples/${filename}`;
+        previewFilename.textContent = `Sample: ${label}`;
+        uploadPrompt.classList.add('hidden');
+        previewContainer.classList.remove('hidden');
+    }
+</script>
+{% endblock %}

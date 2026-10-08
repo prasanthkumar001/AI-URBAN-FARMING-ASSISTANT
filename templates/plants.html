@@ -1,0 +1,309 @@
+{% extends "base.html" %}
+
+{% block title %}My Plants - AI Urban Farming Assistant{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- Header & Add Plant Button -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-extrabold text-slate-800 tracking-tight flex items-center space-x-2.5">
+                <i class="fa-solid fa-leaf text-forest-600"></i>
+                <span>My Urban Plants</span>
+            </h1>
+            <p class="text-xs text-slate-500 mt-1">
+                Manage your balcony, terrace, and indoor crops with tailored watering and AI health monitoring.
+            </p>
+        </div>
+        <button onclick="toggleAddPlantModal(true)"
+            class="inline-flex items-center space-x-2 px-4 py-2.5 bg-forest-600 hover:bg-forest-700 text-white font-semibold rounded-xl text-sm shadow-md transition self-start sm:self-auto">
+            <i class="fa-solid fa-plus"></i>
+            <span>Add New Plant</span>
+        </button>
+    </div>
+
+    <!-- Plants Grid -->
+    {% if plants %}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        {% for plant in plants %}
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden flex flex-col justify-between hover:shadow-md transition">
+            <!-- Card Header -->
+            <div class="p-5">
+                <div class="flex items-start justify-between gap-3 mb-3">
+                    <div>
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-forest-50 text-forest-700 border border-forest-100 mb-1.5">
+                            {{ plant.plant_type }}
+                        </span>
+                        <h3 class="text-lg font-bold text-slate-800 leading-snug">{{ plant.plant_name }}</h3>
+                    </div>
+                    <div class="w-10 h-10 rounded-xl bg-slate-50 text-slate-500 flex items-center justify-center flex-shrink-0 text-base">
+                        {% if 'tomato' in plant.plant_type.lower() %}
+                            🍅
+                        {% elif 'pepper' in plant.plant_type.lower() or 'chilli' in plant.plant_type.lower() %}
+                            🌶️
+                        {% elif 'basil' in plant.plant_type.lower() or 'mint' in plant.plant_type.lower() %}
+                            🌿
+                        {% elif 'succulent' in plant.plant_type.lower() %}
+                            🌵
+                        {% elif 'strawberry' in plant.plant_type.lower() %}
+                            🍓
+                        {% else %}
+                            🌱
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Plant Details -->
+                <div class="space-y-1.5 text-xs text-slate-600 py-2 border-y border-slate-100">
+                    <div class="flex items-center justify-between">
+                        <span class="text-slate-400">Location:</span>
+                        <span class="font-medium flex items-center">
+                            <i class="fa-solid fa-location-dot text-slate-400 mr-1 text-[10px]"></i>
+                            {{ plant.location_type }} ({{ plant.city }})
+                        </span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-slate-400">Planted On:</span>
+                        <span class="font-medium">{{ plant.planting_date }}</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-slate-400">Base Interval:</span>
+                        <span class="font-medium">Every {{ plant.base_watering_days }} days</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-slate-400">Last Watered:</span>
+                        <span class="font-medium text-slate-700">{{ plant.last_watered_date or 'Not recorded' }}</span>
+                    </div>
+                </div>
+
+                <!-- Smart Watering Status Badge -->
+                <div class="mt-4">
+                    {% set rec = plant.watering_rec %}
+                    <div class="p-3 rounded-xl {% if rec.status == 'Water today' %}bg-red-50 border border-red-200 text-red-900{% elif rec.status == 'Water tomorrow' %}bg-amber-50 border border-amber-200 text-amber-900{% else %}bg-emerald-50 border border-emerald-200 text-emerald-900{% endif %}">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold flex items-center space-x-1.5">
+                                {% if rec.status == 'Water today' %}
+                                    <i class="fa-solid fa-droplet text-red-500"></i>
+                                    <span>Water today</span>
+                                {% elif rec.status == 'Water tomorrow' %}
+                                    <i class="fa-solid fa-clock text-amber-500"></i>
+                                    <span>Water tomorrow</span>
+                                {% else %}
+                                    <i class="fa-solid fa-circle-check text-emerald-500"></i>
+                                    <span>No watering needed today</span>
+                                {% endif %}
+                            </span>
+                        </div>
+                        <p class="text-[11px] mt-1 text-slate-600 leading-tight">
+                            {{ rec.rationale }}
+                        </p>
+                    </div>
+                </div>
+
+                <!-- AI Health History Summary -->
+                <div class="mt-3 flex items-center justify-between text-xs text-slate-500">
+                    <span>
+                        <i class="fa-solid fa-stethoscope text-forest-600 mr-1"></i>
+                        {{ plant.total_diagnoses or 0 }} AI health check(s)
+                    </span>
+                    {% if plant.last_diagnosis %}
+                    <span class="font-semibold text-slate-700 truncate max-w-[130px]" title="{{ plant.last_diagnosis }}">
+                        {{ plant.last_diagnosis.split(' - ')[-1] if ' - ' in plant.last_diagnosis else plant.last_diagnosis }}
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Card Actions Footer -->
+            <div class="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
+                <form method="POST" action="{{ url_for('water_plant', plant_id=plant.id) }}" class="inline">
+                    <button type="submit"
+                        class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg text-xs shadow-sm transition flex items-center space-x-1.5">
+                        <i class="fa-solid fa-shower"></i>
+                        <span>Watered Today</span>
+                    </button>
+                </form>
+
+                <div class="flex items-center space-x-2">
+                    <a href="{{ url_for('diagnose', plant_id=plant.id) }}" title="Diagnose Plant Leaf"
+                        class="px-2.5 py-1.5 bg-forest-600 hover:bg-forest-700 text-white font-medium rounded-lg text-xs shadow-sm transition">
+                        <i class="fa-solid fa-microscope mr-1"></i> Diagnose
+                    </a>
+                    <form method="POST" action="{{ url_for('delete_plant', plant_id=plant.id) }}" onsubmit="return confirm('Delete this plant and its health logs?');" class="inline">
+                        <button type="submit" title="Delete Plant" class="w-8 h-8 rounded-lg bg-white border border-slate-200 text-slate-400 hover:text-red-600 hover:border-red-200 flex items-center justify-center transition">
+                            <i class="fa-solid fa-trash text-xs"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-12 text-center max-w-lg mx-auto">
+        <div class="w-20 h-20 rounded-3xl bg-forest-50 text-forest-600 flex items-center justify-center mx-auto mb-4 text-3xl">
+            <i class="fa-solid fa-seedling"></i>
+        </div>
+        <h2 class="text-xl font-bold text-slate-800">Start Your Urban Garden</h2>
+        <p class="text-xs text-slate-500 mt-2 leading-relaxed">
+            Register your tomato plants, balcony herbs, or potted greens to unlock AI leaf disease scanning and Open-Meteo weather watering recommendations.
+        </p>
+        <button onclick="toggleAddPlantModal(true)"
+            class="inline-flex items-center space-x-2 px-5 py-2.5 mt-6 bg-forest-600 hover:bg-forest-700 text-white font-semibold rounded-xl text-sm shadow transition">
+            <i class="fa-solid fa-plus"></i>
+            <span>Add Your First Plant</span>
+        </button>
+    </div>
+    {% endif %}
+
+</div>
+
+<!-- Add Plant Modal -->
+<div id="addPlantModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm hidden p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden border border-slate-100 animate-in fade-in zoom-in-95 duration-150">
+        <div class="bg-forest-900 text-white px-6 py-4 flex items-center justify-between">
+            <h3 class="text-base font-bold flex items-center space-x-2">
+                <i class="fa-solid fa-seedling text-emerald-400"></i>
+                <span>Add Urban Plant</span>
+            </h3>
+            <button onclick="toggleAddPlantModal(false)" class="text-forest-200 hover:text-white">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+        </div>
+
+        <form method="POST" action="{{ url_for('plants_view') }}" class="p-6 space-y-4">
+            <div>
+                <label for="plant_name" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                    Plant Name / Nickname *
+                </label>
+                <input type="text" id="plant_name" name="plant_name" required placeholder="e.g. Balcony Roma Tomato #1"
+                    class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-forest-600 focus:bg-white transition">
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                    <label for="plant_type" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                        Crop Type *
+                    </label>
+                    <select id="plant_type" name="plant_type" onchange="autoSuggestInterval(this.value)"
+                        class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-forest-600 focus:bg-white transition">
+                        <option value="Tomato">Tomato</option>
+                        <option value="Cherry Tomato">Cherry Tomato</option>
+                        <option value="Bell Pepper">Bell Pepper / Capsicum</option>
+                        <option value="Chilli">Chilli / Pepper</option>
+                        <option value="Basil">Sweet Basil</option>
+                        <option value="Mint">Mint / Pudina</option>
+                        <option value="Coriander">Coriander / Cilantro</option>
+                        <option value="Spinach">Spinach / Palak</option>
+                        <option value="Lettuce">Lettuce</option>
+                        <option value="Cucumber">Cucumber</option>
+                        <option value="Strawberry">Strawberry</option>
+                        <option value="Succulent">Succulent / Cactus</option>
+                        <option value="Other">Other Urban Crop</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label for="location_type" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                        Growing Location *
+                    </label>
+                    <select id="location_type" name="location_type"
+                        class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-forest-600 focus:bg-white transition">
+                        <option value="Balcony">Balcony Container</option>
+                        <option value="Terrace">Terrace / Rooftop</option>
+                        <option value="Window Box">Window Box</option>
+                        <option value="Indoor">Indoor (Grow Light / Sill)</option>
+                        <option value="Raised Bed">Raised Bed</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                    <label for="city" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                        City (for Weather)
+                    </label>
+                    <input type="text" id="city" name="city" value="New Delhi" placeholder="e.g. London, Mumbai, New York"
+                        class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-forest-600 focus:bg-white transition">
+                </div>
+
+                <div>
+                    <label for="base_watering_days" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                        Base Water Interval (Days)
+                    </label>
+                    <input type="number" id="base_watering_days" name="base_watering_days" value="2" min="1" max="14"
+                        class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-forest-600 focus:bg-white transition">
+                </div>
+            </div>
+
+            <div>
+                <label for="planting_date" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                    Planting Date
+                </label>
+                <input type="date" id="planting_date" name="planting_date" value="{{ datetime.now().strftime('%Y-%m-%d') if datetime else '' }}"
+                    class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-forest-600 focus:bg-white transition">
+            </div>
+
+            <div>
+                <label for="notes" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                    Notes (Optional)
+                </label>
+                <input type="text" id="notes" name="notes" placeholder="Pot size, soil mix, fertilizer notes..."
+                    class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-forest-600 focus:bg-white transition">
+            </div>
+
+            <div class="pt-2 flex items-center justify-end space-x-2">
+                <button type="button" onclick="toggleAddPlantModal(false)" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition">
+                    Cancel
+                </button>
+                <button type="submit" class="px-5 py-2 bg-forest-600 hover:bg-forest-700 text-white rounded-xl text-xs font-semibold shadow transition">
+                    Save Plant
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function toggleAddPlantModal(show) {
+        const modal = document.getElementById('addPlantModal');
+        if (show) {
+            modal.classList.remove('hidden');
+        } else {
+            modal.classList.add('hidden');
+        }
+    }
+
+    const intervalMap = {
+        'Tomato': 2,
+        'Cherry Tomato': 2,
+        'Bell Pepper': 3,
+        'Chilli': 3,
+        'Basil': 1,
+        'Mint': 1,
+        'Coriander': 2,
+        'Spinach': 2,
+        'Lettuce': 2,
+        'Cucumber': 2,
+        'Strawberry': 2,
+        'Succulent': 7,
+        'Other': 2
+    };
+
+    function autoSuggestInterval(crop) {
+        const input = document.getElementById('base_watering_days');
+        if (intervalMap[crop]) {
+            input.value = intervalMap[crop];
+        }
+    }
+
+    // Set today's date if empty
+    window.addEventListener('DOMContentLoaded', () => {
+        const pDate = document.getElementById('planting_date');
+        if (!pDate.value) {
+            pDate.value = new Date().toISOString().split('T')[0];
+        }
+    });
+</script>
+{% endblock %}
