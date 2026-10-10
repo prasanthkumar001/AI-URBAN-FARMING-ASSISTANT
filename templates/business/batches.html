@@ -1,0 +1,211 @@
+{% extends "base.html" %}
+
+{% block title %}Commercial Batches - KrishiNova{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- Header & Action -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-extrabold text-slate-800 tracking-tight flex items-center space-x-2.5">
+                <i class="fa-solid fa-layer-group text-forest-600"></i>
+                <span>Commercial Batch Health Monitoring</span>
+            </h1>
+            <p class="text-xs text-slate-500 mt-1">
+                Monitor seedling trays and growing zones, screen for foliar pathogens, and record manager approvals.
+            </p>
+        </div>
+
+        <button onclick="toggleAddBatchModal(true)"
+            class="px-4 py-2.5 bg-forest-600 hover:bg-forest-700 text-white font-semibold rounded-xl text-xs shadow transition flex items-center space-x-1.5 self-start sm:self-auto">
+            <i class="fa-solid fa-plus"></i>
+            <span>Register Growing Batch</span>
+        </button>
+    </div>
+
+    <!-- Batches Grid -->
+    {% if batches %}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        {% for b in batches %}
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 hover:shadow-md transition flex flex-col justify-between">
+            <div>
+                <div class="flex items-start justify-between gap-2">
+                    <div>
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-slate-100 text-slate-600">
+                            {{ b.growing_area }}
+                        </span>
+                        <h3 class="text-base font-bold text-slate-900 mt-1">{{ b.batch_name }}</h3>
+                        <p class="text-xs text-slate-400 font-medium">{{ b.plant_type }} &bull; {{ b.quantity }} units</p>
+                    </div>
+
+                    <span class="px-2.5 py-1 rounded-full text-xs font-bold {% if b.health_status == 'Good' %}bg-emerald-100 text-emerald-800{% elif b.health_status == 'Quarantined' %}bg-red-100 text-red-800{% else %}bg-amber-100 text-amber-800{% endif %}">
+                        {{ b.health_status }}
+                    </span>
+                </div>
+
+                <!-- Manager Review Status (Prompt Requirement #4B) -->
+                <div class="mt-4 p-3 rounded-xl bg-slate-50 border border-slate-100 text-xs">
+                    <div class="flex items-center justify-between">
+                        <span class="text-slate-400 font-medium">Manager Sign-off:</span>
+                        {% if b.manager_reviewed %}
+                        <span class="font-bold text-emerald-700 flex items-center">
+                            <i class="fa-solid fa-circle-check text-emerald-500 mr-1"></i> Confirmed
+                        </span>
+                        {% else %}
+                        <span class="font-bold text-amber-700 flex items-center">
+                            <i class="fa-solid fa-hourglass-half text-amber-500 mr-1"></i> Pending Review
+                        </span>
+                        {% endif %}
+                    </div>
+                    {% if b.review_notes %}
+                    <p class="text-slate-600 mt-1.5 text-[11px] italic">"{{ b.review_notes }}"</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Card Actions -->
+            <div class="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+                <a href="{{ url_for('diagnose') }}" class="font-semibold text-forest-700 hover:text-forest-800 flex items-center">
+                    <i class="fa-solid fa-microscope mr-1 text-emerald-600"></i> AI Screen
+                </a>
+
+                <button onclick="openReviewModal({{ b.id }}, '{{ b.batch_name|replace("'", "\\'") }}', '{{ b.health_status }}')"
+                    class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl transition">
+                    Manager Review
+                </button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="bg-white rounded-2xl border border-slate-100 p-12 text-center max-w-md mx-auto shadow-sm text-xs text-slate-400">
+        <i class="fa-solid fa-layer-group text-3xl text-slate-300 mb-2 block"></i>
+        No active commercial batches registered.<br>
+        <button onclick="toggleAddBatchModal(true)" class="mt-3 px-4 py-2 bg-forest-600 text-white font-semibold rounded-xl shadow">
+            Register First Batch
+        </button>
+    </div>
+    {% endif %}
+
+</div>
+
+<!-- Register Batch Modal -->
+<div id="addBatchModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm hidden p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden border border-slate-100 animate-in fade-in duration-150">
+        <div class="bg-forest-900 text-white px-6 py-4 flex items-center justify-between">
+            <h3 class="text-sm font-bold flex items-center space-x-2">
+                <i class="fa-solid fa-layer-group text-emerald-400"></i>
+                <span>Register Growing Batch</span>
+            </h3>
+            <button onclick="toggleAddBatchModal(false)" class="text-forest-200 hover:text-white">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+        </div>
+
+        <form method="POST" action="{{ url_for('business_batches') }}" class="p-6 space-y-3.5 text-xs">
+            <div>
+                <label class="block font-semibold text-slate-700 uppercase tracking-wider mb-1">Batch Code / Name *</label>
+                <input type="text" name="batch_name" required placeholder="e.g. BATCH-2026-TOM-01"
+                    class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-forest-600 transition">
+            </div>
+
+            <div>
+                <label class="block font-semibold text-slate-700 uppercase tracking-wider mb-1">Crop Type *</label>
+                <input type="text" name="plant_type" value="Tomato" required
+                    class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-forest-600 transition">
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block font-semibold text-slate-700 uppercase tracking-wider mb-1">Growing Area</label>
+                    <select name="growing_area" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-forest-600 transition">
+                        <option value="Greenhouse A">Greenhouse A</option>
+                        <option value="Polyhouse 1">Polyhouse 1</option>
+                        <option value="Shade Net Bed">Shade Net Bed</option>
+                        <option value="Outdoor Deck">Outdoor Deck</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-700 uppercase tracking-wider mb-1">Quantity (Units)</label>
+                    <input type="number" name="quantity" value="25" min="1"
+                        class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-forest-600 transition">
+                </div>
+            </div>
+
+            <div class="pt-2 flex items-center justify-end space-x-2">
+                <button type="button" onclick="toggleAddBatchModal(false)" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-semibold transition">
+                    Cancel
+                </button>
+                <button type="submit" class="px-5 py-2 bg-forest-600 hover:bg-forest-700 text-white rounded-xl font-semibold shadow transition">
+                    Save Batch
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Manager Review Modal -->
+<div id="reviewModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm hidden p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden border border-slate-100 animate-in fade-in duration-150">
+        <div class="bg-forest-900 text-white px-6 py-4 flex items-center justify-between">
+            <h3 class="text-sm font-bold flex items-center space-x-2">
+                <i class="fa-solid fa-clipboard-check text-amber-400"></i>
+                <span id="reviewModalTitle">Manager Review</span>
+            </h3>
+            <button onclick="closeReviewModal()" class="text-forest-200 hover:text-white">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+        </div>
+
+        <form id="reviewForm" method="POST" action="" class="p-6 space-y-3.5 text-xs">
+            <div>
+                <label class="block font-semibold text-slate-700 uppercase tracking-wider mb-1">Health Status *</label>
+                <select name="health_status" id="reviewStatus"
+                    class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-forest-600 transition">
+                    <option value="Good">Good (Healthy Growth, No Symptoms)</option>
+                    <option value="Needs Inspection">Needs Inspection (Minor Spots / Pests)</option>
+                    <option value="Quarantined">Quarantined (Foliar Pathogen Identified)</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block font-semibold text-slate-700 uppercase tracking-wider mb-1">Manager Notes & Findings</label>
+                <textarea name="review_notes" rows="3" placeholder="Checked lower foliage, sprayed neem emulsion, confirmed safe for retail display..."
+                    class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-forest-600 transition"></textarea>
+            </div>
+
+            <div class="pt-2 flex items-center justify-end space-x-2">
+                <button type="button" onclick="closeReviewModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-semibold transition">
+                    Cancel
+                </button>
+                <button type="submit" class="px-5 py-2 bg-forest-600 hover:bg-forest-700 text-white rounded-xl font-semibold shadow transition">
+                    Confirm Review
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function toggleAddBatchModal(show) {
+        document.getElementById('addBatchModal').classList.toggle('hidden', !show);
+    }
+
+    function openReviewModal(batchId, batchName, currentStatus) {
+        const modal = document.getElementById('reviewModal');
+        const title = document.getElementById('reviewModalTitle');
+        const form = document.getElementById('reviewForm');
+        const statusSelect = document.getElementById('reviewStatus');
+
+        title.textContent = `Review: ${batchName}`;
+        form.action = `/business/batches/${batchId}/review`;
+        statusSelect.value = currentStatus;
+        modal.classList.remove('hidden');
+    }
+
+    function closeReviewModal() {
+        document.getElementById('reviewModal').classList.add('hidden');
+    }
+</script>
+{% endblock %}

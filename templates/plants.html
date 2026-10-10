@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}My Plants - AI Urban Farming Assistant{% endblock %}
+{% block title %}My Plants - KrishiNova{% endblock %}
 
 {% block content %}
 <div class="space-y-6">
@@ -54,6 +54,23 @@
                     </div>
                 </div>
 
+                <!-- Plant Condition Status Pills -->
+                <div class="mb-3 flex flex-wrap gap-1.5 items-center">
+                    {% if plant.temp_status %}
+                    {% set t_stat = plant.temp_status %}
+                    <span class="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold border {{ t_stat.badge_class }}" title="{{ t_stat.detail }}">
+                        <i class="fa-solid {{ t_stat.icon }}"></i>
+                        <span>{{ t_stat.status }}</span>
+                    </span>
+                    {% endif %}
+                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-slate-100 text-slate-700">
+                        {{ plant.growth_stage or 'Vegetative' }}
+                    </span>
+                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 text-blue-700">
+                        Soil: {{ plant.soil_moisture or 'Moderate' }}
+                    </span>
+                </div>
+
                 <!-- Plant Details -->
                 <div class="space-y-1.5 text-xs text-slate-600 py-2 border-y border-slate-100">
                     <div class="flex items-center justify-between">
@@ -72,28 +89,38 @@
                         <span class="font-medium">Every {{ plant.base_watering_days }} days</span>
                     </div>
                     <div class="flex items-center justify-between">
+                        <span class="text-slate-400">Optimal Range:</span>
+                        <span class="font-medium text-emerald-700">
+                            {{ plant.preferred_temp_optimal_min|default(18.0) }}°C – {{ plant.preferred_temp_optimal_max|default(27.0) }}°C
+                        </span>
+                    </div>
+                    <div class="flex items-center justify-between">
                         <span class="text-slate-400">Last Watered:</span>
                         <span class="font-medium text-slate-700">{{ plant.last_watered_date or 'Not recorded' }}</span>
                     </div>
                 </div>
 
-                <!-- Smart Watering Status Badge -->
+                <!-- Smart Watering Status Badge (4-tier with estimate disclaimer) -->
                 <div class="mt-4">
                     {% set rec = plant.watering_rec %}
-                    <div class="p-3 rounded-xl {% if rec.status == 'Water today' %}bg-red-50 border border-red-200 text-red-900{% elif rec.status == 'Water tomorrow' %}bg-amber-50 border border-amber-200 text-amber-900{% else %}bg-emerald-50 border border-emerald-200 text-emerald-900{% endif %}">
+                    <div class="p-3 rounded-xl {% if rec.status == 'Water today' %}bg-red-50 border border-red-200 text-red-900{% elif rec.status == 'Check soil before watering' %}bg-amber-50 border border-amber-200 text-amber-900{% elif rec.status == 'Water tomorrow' %}bg-blue-50 border border-blue-200 text-blue-900{% else %}bg-emerald-50 border border-emerald-200 text-emerald-900{% endif %}">
                         <div class="flex items-center justify-between">
                             <span class="text-xs font-bold flex items-center space-x-1.5">
                                 {% if rec.status == 'Water today' %}
                                     <i class="fa-solid fa-droplet text-red-500"></i>
                                     <span>Water today</span>
+                                {% elif rec.status == 'Check soil before watering' %}
+                                    <i class="fa-solid fa-hand-holding-droplet text-amber-500"></i>
+                                    <span>Check soil before watering</span>
                                 {% elif rec.status == 'Water tomorrow' %}
-                                    <i class="fa-solid fa-clock text-amber-500"></i>
+                                    <i class="fa-solid fa-clock text-blue-500"></i>
                                     <span>Water tomorrow</span>
                                 {% else %}
                                     <i class="fa-solid fa-circle-check text-emerald-500"></i>
                                     <span>No watering needed today</span>
                                 {% endif %}
                             </span>
+                            <span class="text-[10px] text-slate-400 font-normal">* Estimate</span>
                         </div>
                         <p class="text-[11px] mt-1 text-slate-600 leading-tight">
                             {{ rec.rationale }}

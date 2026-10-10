@@ -1,39 +1,138 @@
 {% extends "base.html" %}
 
-{% block title %}Create Account - AI Urban Farming Assistant{% endblock %}
+{% block title %}Create Account - KrishiNova{% endblock %}
 
 {% block content %}
-<div class="min-h-[75vh] flex items-center justify-center py-8">
-    <div class="max-w-md w-full bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden">
-        <!-- Card Header -->
-        <div class="bg-gradient-to-r from-forest-800 to-forest-700 px-8 py-8 text-center text-white relative">
-            <div class="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center mx-auto mb-3 backdrop-blur-sm border border-white/20">
-                <i class="fa-solid fa-user-plus text-3xl text-emerald-300"></i>
+<div class="min-h-[75vh] flex flex-col items-center justify-center py-6 sm:py-10">
+
+    <!-- Language Selector Bar (Top of Registration Card) -->
+    <div class="w-full max-w-4xl mb-4 bg-white/90 backdrop-blur-md rounded-2xl p-2.5 shadow-sm border border-slate-200/80 flex flex-wrap items-center justify-between gap-2.5">
+        <div class="flex items-center space-x-2 text-xs font-semibold text-slate-700 pl-2">
+            <i class="fa-solid fa-language text-forest-700 text-base"></i>
+            <span id="txt-choose-lang">Preferred Language / ભાષા / भाषा / భాష:</span>
+        </div>
+        <div class="flex items-center gap-1.5 flex-wrap">
+            <button type="button" onclick="switchRegisterLanguage('en')" id="btn-lang-en" class="px-3 py-1.5 rounded-xl text-xs font-bold border transition flex items-center space-x-1.5 shadow-sm">
+                <span>🇬🇧</span>
+                <span>English</span>
+            </button>
+            <button type="button" onclick="switchRegisterLanguage('hi')" id="btn-lang-hi" class="px-3 py-1.5 rounded-xl text-xs font-bold border transition flex items-center space-x-1.5">
+                <span>🇮🇳</span>
+                <span>हिन्दी</span>
+            </button>
+            <button type="button" onclick="switchRegisterLanguage('gu')" id="btn-lang-gu" class="px-3 py-1.5 rounded-xl text-xs font-bold border transition flex items-center space-x-1.5">
+                <span>🇮🇳</span>
+                <span>ગુજરાતી</span>
+            </button>
+            <button type="button" onclick="switchRegisterLanguage('te')" id="btn-lang-te" class="px-3 py-1.5 rounded-xl text-xs font-bold border transition flex items-center space-x-1.5">
+                <span>🇮🇳</span>
+                <span>తెలుగు</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Register Container -->
+    <div class="max-w-4xl w-full bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden grid grid-cols-1 md:grid-cols-2">
+        
+        <!-- Left Side: Visual Hero Showcase with KrishiNova Image -->
+        <div class="relative bg-gradient-to-br from-forest-950 via-forest-900 to-forest-800 text-white p-8 flex flex-col justify-between overflow-hidden min-h-[380px] md:min-h-[560px]">
+            <!-- Background Image with Gradient Overlay -->
+            <div class="absolute inset-0 z-0">
+                <img src="{{ url_for('static', filename='images/ai_krishi_assistant.jpg') }}" alt="KrishiNova Urban Farming Assistant"
+                    class="w-full h-full object-cover opacity-35 scale-105 hover:scale-110 transition duration-700 ease-out">
+                <div class="absolute inset-0 bg-gradient-to-t from-forest-950 via-forest-900/80 to-transparent"></div>
             </div>
-            <h2 class="text-2xl font-bold tracking-tight">Create Urban Farmer Account</h2>
-            <p class="text-xs text-forest-200 mt-1">Start monitoring your balcony, terrace or home garden</p>
+
+            <!-- Top Tagline -->
+            <div class="relative z-10">
+                <div class="inline-flex items-center space-x-2 bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 px-3 py-1 rounded-full text-xs font-semibold backdrop-blur-md mb-4">
+                    <i class="fa-solid fa-seedling"></i>
+                    <span id="txt-hero-tag">Join the Urban Green Revolution</span>
+                </div>
+                <h1 class="text-3xl font-extrabold tracking-tight text-white leading-tight flex items-center space-x-2">
+                    <span>KrishiNova</span>
+                    <span class="text-amber-400 text-xs px-2 py-0.5 rounded-md bg-amber-400/20 border border-amber-400/30 font-bold uppercase tracking-wider">AI</span>
+                </h1>
+                <p id="txt-hero-subtitle" class="text-xs text-forest-200 mt-2 leading-relaxed">
+                    Empowering urban gardeners to grow thriving balcony, terrace, and home vegetables with AI.
+                </p>
+            </div>
+
+            <!-- Urban Farming Benefits -->
+            <div class="relative z-10 space-y-3 my-6">
+                <div class="flex items-center space-x-3 bg-white/10 backdrop-blur-md p-2.5 rounded-2xl border border-white/10 text-xs">
+                    <div class="w-8 h-8 rounded-xl bg-emerald-500/30 text-emerald-300 flex items-center justify-center text-sm flex-shrink-0">
+                        <i class="fa-solid fa-leaf"></i>
+                    </div>
+                    <div>
+                        <strong id="txt-feat1-title" class="text-white block font-semibold">Balcony & Terrace Optimized</strong>
+                        <span id="txt-feat1-sub" class="text-forest-200 text-[11px]">Container evaporation & heat stress tracking</span>
+                    </div>
+                </div>
+
+                <div class="flex items-center space-x-3 bg-white/10 backdrop-blur-md p-2.5 rounded-2xl border border-white/10 text-xs">
+                    <div class="w-8 h-8 rounded-xl bg-blue-500/30 text-blue-300 flex items-center justify-center text-sm flex-shrink-0">
+                        <i class="fa-solid fa-microphone-lines"></i>
+                    </div>
+                    <div>
+                        <strong id="txt-feat2-title" class="text-white block font-semibold">Voice Microphone AI Assistant</strong>
+                        <span id="txt-feat2-sub" class="text-forest-200 text-[11px]">Speak your doubts in your regional mother tongue</span>
+                    </div>
+                </div>
+
+                <div class="flex items-center space-x-3 bg-white/10 backdrop-blur-md p-2.5 rounded-2xl border border-white/10 text-xs">
+                    <div class="w-8 h-8 rounded-xl bg-purple-500/30 text-purple-300 flex items-center justify-center text-sm flex-shrink-0">
+                        <i class="fa-solid fa-lock"></i>
+                    </div>
+                    <div>
+                        <strong id="txt-feat3-title" class="text-white block font-semibold">Salted Scrypt Protection</strong>
+                        <span id="txt-feat3-sub" class="text-forest-200 text-[11px]">Strict multi-tenant garden privacy</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Note -->
+            <div class="relative z-10 text-[11px] text-forest-300 flex items-center space-x-1.5">
+                <i class="fa-solid fa-cloud-sun text-emerald-400"></i>
+                <span id="txt-footer-badge">Open-Meteo Real-Time Weather Integration</span>
+            </div>
         </div>
 
-        <!-- Form Body -->
-        <div class="p-8">
-            <form method="POST" action="{{ url_for('register') }}" onsubmit="return validateRegisterForm()" class="space-y-4">
+        <!-- Right Side: Registration Form -->
+        <div class="p-8 sm:p-10 flex flex-col justify-center">
+            <div class="mb-5">
+                <h2 id="txt-form-title" class="text-2xl font-bold text-slate-800 tracking-tight">Create Farmer Account</h2>
+                <p id="txt-form-sub" class="text-xs text-slate-500 mt-1">Start monitoring your balcony, terrace or home garden</p>
+            </div>
+
+            <form method="POST" action="{{ url_for('register') }}" onsubmit="return validateRegisterForm()" class="space-y-3.5">
+                <!-- Hidden Language Input -->
+                <input type="hidden" name="preferred_language" id="input_preferred_language" value="{{ current_language or 'en' }}">
+
+                <!-- Username with Microphone voice input -->
                 <div>
-                    <label for="username" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
-                        Username
-                    </label>
+                    <div class="flex items-center justify-between mb-1">
+                        <label for="username" id="txt-label-user" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                            Username
+                        </label>
+                        <button type="button" onclick="startVoiceInputForField('username')" class="text-xs text-forest-700 hover:text-forest-800 font-semibold inline-flex items-center space-x-1 bg-forest-50 px-2 py-0.5 rounded-md border border-forest-200 hover:bg-forest-100 transition" title="Speak to enter username">
+                            <i id="mic-icon-username" class="fa-solid fa-microphone text-forest-600"></i>
+                            <span id="txt-mic-hint">Speak</span>
+                        </button>
+                    </div>
                     <div class="relative">
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
                             <i class="fa-solid fa-user"></i>
                         </span>
                         <input type="text" id="username" name="username" value="{{ username or '' }}" required autofocus minlength="3"
                             placeholder="e.g. rooftop_grower"
-                            class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-forest-600 focus:bg-white transition">
+                            class="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-forest-600 focus:bg-white transition">
                     </div>
-                    <span class="text-[11px] text-slate-400 mt-1 block">At least 3 characters.</span>
                 </div>
 
+                <!-- Email Address -->
                 <div>
-                    <label for="email" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+                    <label for="email" id="txt-label-email" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
                         Email Address
                     </label>
                     <div class="relative">
@@ -42,12 +141,24 @@
                         </span>
                         <input type="email" id="email" name="email" value="{{ email or '' }}" required
                             placeholder="e.g. farmer@urban.com"
-                            class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-forest-600 focus:bg-white transition">
+                            class="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-forest-600 focus:bg-white transition">
                     </div>
                 </div>
 
+                <!-- Account Role / Type -->
                 <div>
-                    <label for="password" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+                    <label for="role" id="txt-label-role" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                        Account Purpose
+                    </label>
+                    <select id="role" name="role" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-forest-600 focus:bg-white transition">
+                        <option value="home_gardener" id="opt-role-home">Home Urban Gardener (Balcony, Terrace, Backyard)</option>
+                        <option value="nursery_owner" id="opt-role-biz">Commercial Plant Nursery / Garden Centre Owner</option>
+                    </select>
+                </div>
+
+                <!-- Password -->
+                <div>
+                    <label for="password" id="txt-label-pass" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
                         Password
                     </label>
                     <div class="relative">
@@ -56,15 +167,16 @@
                         </span>
                         <input type="password" id="password" name="password" required minlength="6"
                             placeholder="Minimum 6 characters"
-                            class="w-full pl-10 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-forest-600 focus:bg-white transition">
+                            class="w-full pl-10 pr-10 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-forest-600 focus:bg-white transition">
                         <button type="button" onclick="togglePasswordVisibility('password', this)" class="absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-400 hover:text-slate-600">
                             <i class="fa-solid fa-eye"></i>
                         </button>
                     </div>
                 </div>
 
+                <!-- Confirm Password -->
                 <div>
-                    <label for="confirm_password" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+                    <label for="confirm_password" id="txt-label-conf-pass" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
                         Confirm Password
                     </label>
                     <div class="relative">
@@ -73,7 +185,7 @@
                         </span>
                         <input type="password" id="confirm_password" name="confirm_password" required minlength="6"
                             placeholder="Re-enter your password"
-                            class="w-full pl-10 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-forest-600 focus:bg-white transition">
+                            class="w-full pl-10 pr-10 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-forest-600 focus:bg-white transition">
                         <button type="button" onclick="togglePasswordVisibility('confirm_password', this)" class="absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-400 hover:text-slate-600">
                             <i class="fa-solid fa-eye"></i>
                         </button>
@@ -83,30 +195,247 @@
                     </div>
                 </div>
 
-                <!-- Security Note -->
-                <div class="bg-forest-50 border border-forest-200 rounded-xl p-3 flex items-start space-x-2.5 text-xs text-forest-800">
-                    <i class="fa-solid fa-shield-halved text-forest-600 mt-0.5"></i>
-                    <span>Passwords are protected with modern salted Scrypt encryption. Your urban garden data is isolated and private.</span>
-                </div>
-
+                <!-- Submit Button -->
                 <button type="submit"
-                    class="w-full py-3 px-4 bg-forest-600 hover:bg-forest-700 text-white font-semibold rounded-xl text-sm shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center space-x-2 mt-2">
-                    <i class="fa-solid fa-check"></i>
-                    <span>Register & Get Started</span>
+                    class="w-full py-2.5 px-4 bg-forest-700 hover:bg-forest-800 text-white font-semibold rounded-xl text-sm shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center space-x-2 mt-3">
+                    <i class="fa-solid fa-user-plus"></i>
+                    <span id="txt-btn-register">Create My Account</span>
                 </button>
             </form>
 
-            <div class="mt-6 pt-6 border-t border-slate-100 text-center text-sm text-slate-600">
-                Already have an account?
-                <a href="{{ url_for('login') }}" class="font-semibold text-forest-700 hover:text-forest-800 underline ml-1">
-                    Sign in here
+            <div class="mt-5 pt-4 border-t border-slate-100 text-center text-sm text-slate-600">
+                <span id="txt-already-account">Already have an account?</span>
+                <a href="{{ url_for('login') }}" id="txt-link-login" class="font-semibold text-forest-700 hover:text-forest-800 underline ml-1">
+                    Log In
                 </a>
             </div>
         </div>
+
     </div>
 </div>
 
 <script>
+    const I18N_REGISTER = {
+        en: {
+            chooseLang: "Preferred Language / ભાષા / भाषा / భాష:",
+            heroTag: "Join the Urban Green Revolution",
+            heroSubtitle: "Empowering urban gardeners to grow thriving balcony, terrace, and home vegetables with AI.",
+            feat1Title: "Balcony & Terrace Optimized",
+            feat1Sub: "Container evaporation & heat stress tracking",
+            feat2Title: "Voice Microphone AI Assistant",
+            feat2Sub: "Speak your doubts in your regional mother tongue",
+            feat3Title: "Salted Scrypt Protection",
+            feat3Sub: "Strict multi-tenant garden privacy",
+            footerBadge: "Open-Meteo Real-Time Weather Integration",
+            formTitle: "Create Farmer Account",
+            formSub: "Start monitoring your balcony, terrace or home garden",
+            labelUser: "Username",
+            phUser: "e.g. rooftop_grower",
+            labelEmail: "Email Address",
+            phEmail: "e.g. farmer@urban.com",
+            labelRole: "Account Purpose",
+            roleHome: "Home Urban Gardener (Balcony, Terrace, Backyard)",
+            roleBiz: "Commercial Plant Nursery / Garden Centre Owner",
+            labelPass: "Password",
+            phPass: "Minimum 6 characters",
+            labelConfPass: "Confirm Password",
+            phConfPass: "Re-enter your password",
+            btnRegister: "Create My Account",
+            alreadyAccount: "Already have an account?",
+            linkLogin: "Log In",
+            micHint: "Speak",
+            mismatchErr: "Passwords do not match.",
+            speechLocale: "en-IN"
+        },
+        hi: {
+            chooseLang: "पसंदीदा भाषा (Select Language):",
+            heroTag: "शहरी हरित क्रांति से जुड़ें",
+            heroSubtitle: "बालकनी, छत और घर में AI के साथ भरपूर सब्जियां उगाएं।",
+            feat1Title: "बालकनी एवं छत के अनुकूल",
+            feat1Sub: "गमलों में पानी वाष्पीकरण और गर्मी की निगरानी",
+            feat2Title: "वॉयस माइक AI सहायक",
+            feat2Sub: "अपनी मातृभाषा में बोलकर कृषि समस्याएं पूछें",
+            feat3Title: "सॉल्टेड स्क्रिप्ट सुरक्षा",
+            feat3Sub: "पूर्णतः सुरक्षित एवं निजी बागवानी डेटा",
+            footerBadge: "ओपन-मेटियो वास्तविक समय मौसम डेटा",
+            formTitle: "किसान खाता बनाएं",
+            formSub: "अपनी बालकनी, छत या गृह वाटिका की निगरानी शुरू करें",
+            labelUser: "यूज़रनेम",
+            phUser: "जैसे rooftop_grower",
+            labelEmail: "ईमेल पता",
+            phEmail: "जैसे farmer@urban.com",
+            labelRole: "खाता प्रकार",
+            roleHome: "घरेलू शहरी बागवान (बालकनी, छत, आँगन)",
+            roleBiz: "व्यावसायिक नर्सरी / गार्डन सेंटर संचालक",
+            labelPass: "पासवर्ड",
+            phPass: "कम से कम 6 अक्षर",
+            labelConfPass: "पासवर्ड की पुष्टि करें",
+            phConfPass: "पासवर्ड दोबारा दर्ज करें",
+            btnRegister: "मेरा खाता बनाएं",
+            alreadyAccount: "पहले से खाता है?",
+            linkLogin: "लॉगिन करें",
+            micHint: "बोलें",
+            mismatchErr: "दोनों पासवर्ड मेल नहीं खाते।",
+            speechLocale: "hi-IN"
+        },
+        gu: {
+            chooseLang: "પસંદગીની ભાષા (Select Language):",
+            heroTag: "શહેરી હરિયાળી ક્રાંતિમાં જોડાઓ",
+            heroSubtitle: "બાલકની, ટેરેસ અને ઘરમાં AI સાથે તંદુરસ્ત શાકભાજી ઉગાડો.",
+            feat1Title: "બાલકની અને ટેરેસ માટે ખાસ",
+            feat1Sub: "કૂંડામાં બાષ્પીભવન અને ગરમી તણાવ પર નજર",
+            feat2Title: "વોઈસ માઈક AI સહાયક",
+            feat2Sub: "તમારી માતૃભાષામાં બોલીને સમસ્યાઓ પૂછો",
+            feat3Title: "સુરક્ષિત સ્ક્રિપ્ટ એન્ક્રિપ્શન",
+            feat3Sub: "તમારા બગીચાની ખાનગી માહિતી સંપૂર્ણ સુરક્ષિત",
+            footerBadge: "ઓપન-મેટિઓ લાઈવ હવામાન સુવિધા",
+            formTitle: "ખેડૂત ખાતું બનાવો",
+            formSub: "તમારી બાલકની, ટેરેસ કે બગીચાનું રક્ષણ શરૂ કરો",
+            labelUser: "વપરાશકર્તા નામ (Username)",
+            phUser: "દા.ત. rooftop_grower",
+            labelEmail: "ઈમેલ સરનામું",
+            phEmail: "દા.ત. farmer@urban.com",
+            labelRole: "ખાતાનો પ્રકાર",
+            roleHome: "ઘરેલુ શહેરી માળી (બાલકની, અગાશી, વાડો)",
+            roleBiz: "કોમર્શિયલ નર્સરી / ગાર્ડન સેન્ટર માલિક",
+            labelPass: "પાસવર્ડ",
+            phPass: "ઓછામાં ઓછા ૬ અક્ષર",
+            labelConfPass: "પાસવર્ડ કન્ફર્મ કરો",
+            phConfPass: "પાસવર્ડ ફરીથી લખો",
+            btnRegister: "મારું ખાતું બનાવો",
+            alreadyAccount: "પહેલેથી ખાતું છે?",
+            linkLogin: "લૉગ ઇન કરો",
+            micHint: "બોલો",
+            mismatchErr: "બંને પાસવર્ડ સરખા નથી.",
+            speechLocale: "gu-IN"
+        },
+        te: {
+            chooseLang: "ఇష్టపడే భాష (Select Language):",
+            heroTag: "పట్టణ హరిత విప్లవంలో చేరండి",
+            heroSubtitle: "బాల్కనీ మరియు టెర్రస్‌లలో AI సహాయంతో ఆరోగ్యకరమైన కూరగాయలు పండించండి.",
+            feat1Title: "బాల్కనీ & టెర్రస్ అనుకూలం",
+            feat1Sub: "కుండీలలో నీటి ఆవిరి మరియు వేడిమి ట్రాకింగ్",
+            feat2Title: "వాయిస్ మైక్ AI సహాయకుడు",
+            feat2Sub: "మీ మాతృభాషలో మాట్లాడి వ్యవసాయ సందేహాలు నివృత్తి చేసుకోండి",
+            feat3Title: "సురక్షిత ఎన్‌క్రిప్షన్ భద్రత",
+            feat3Sub: "మీ తోట సమాచారం అత్యంత గోప్యంగా ఉంటుంది",
+            footerBadge: "ఓపెన్-మెటియో ప్రత్యక్ష వాతావరణ సమాచారం",
+            formTitle: "రైతు ఖాతాను సృష్టించండి",
+            formSub: "మీ బాల్కనీ లేదా ఇంటి తోట సంరక్షణ ప్రారంభించండి",
+            labelUser: "యూజర్‌నేమ్",
+            phUser: "ఉదా: rooftop_grower",
+            labelEmail: "ఈమెయిల్ చిరునామా",
+            phEmail: "ఉదా: farmer@urban.com",
+            labelRole: "ఖాతా రకం",
+            roleHome: "గృహ అర్బన్ గార్డెనర్ (బాల్కనీ, టెర్రస్)",
+            roleBiz: "వాణిజ్య నర్సరీ / గార్డెన్ సెంటర్ యజమాని",
+            labelPass: "పాస్‌వర్డ్",
+            phPass: "కనీసం 6 అక్షరాలు",
+            labelConfPass: "పాస్‌వర్డ్ నిర్ధారించండి",
+            phConfPass: "పాస్‌వర్డ్ మళ్లీ నమోదు చేయండి",
+            btnRegister: "నా ఖాతాను సృష్టించండి",
+            alreadyAccount: "ఇప్పటికే ఖాతా ఉందా?",
+            linkLogin: "లాగిన్ అవ్వండి",
+            micHint: "మాట్లాడండి",
+            mismatchErr: "పాస్‌వర్డ్‌లు సరిపోలడం లేదు.",
+            speechLocale: "te-IN"
+        }
+    };
+
+    let currentSelectedLang = "{{ current_language or 'en' }}";
+
+    function switchRegisterLanguage(lang) {
+        if (!I18N_REGISTER[lang]) lang = 'en';
+        currentSelectedLang = lang;
+
+        // Sync hidden input for form submission
+        const hiddenLang = document.getElementById('input_preferred_language');
+        if (hiddenLang) hiddenLang.value = lang;
+
+        // Update button styles
+        ['en', 'hi', 'gu', 'te'].forEach(l => {
+            const btn = document.getElementById(`btn-lang-${l}`);
+            if (btn) {
+                if (l === lang) {
+                    btn.className = "px-3 py-1.5 rounded-xl text-xs font-bold border transition flex items-center space-x-1.5 bg-forest-700 text-white border-forest-700 shadow-sm";
+                } else {
+                    btn.className = "px-3 py-1.5 rounded-xl text-xs font-bold border transition flex items-center space-x-1.5 bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100";
+                }
+            }
+        });
+
+        // Apply translations
+        const t = I18N_REGISTER[lang];
+        document.getElementById('txt-choose-lang').innerText = t.chooseLang;
+        document.getElementById('txt-hero-tag').innerText = t.heroTag;
+        document.getElementById('txt-hero-subtitle').innerText = t.heroSubtitle;
+        document.getElementById('txt-feat1-title').innerText = t.feat1Title;
+        document.getElementById('txt-feat1-sub').innerText = t.feat1Sub;
+        document.getElementById('txt-feat2-title').innerText = t.feat2Title;
+        document.getElementById('txt-feat2-sub').innerText = t.feat2Sub;
+        document.getElementById('txt-feat3-title').innerText = t.feat3Title;
+        document.getElementById('txt-feat3-sub').innerText = t.feat3Sub;
+        document.getElementById('txt-footer-badge').innerText = t.footerBadge;
+        document.getElementById('txt-form-title').innerText = t.formTitle;
+        document.getElementById('txt-form-sub').innerText = t.formSub;
+        document.getElementById('txt-label-user').innerText = t.labelUser;
+        document.getElementById('username').placeholder = t.phUser;
+        document.getElementById('txt-label-email').innerText = t.labelEmail;
+        document.getElementById('email').placeholder = t.phEmail;
+        document.getElementById('txt-label-role').innerText = t.labelRole;
+        document.getElementById('opt-role-home').innerText = t.roleHome;
+        document.getElementById('opt-role-biz').innerText = t.roleBiz;
+        document.getElementById('txt-label-pass').innerText = t.labelPass;
+        document.getElementById('password').placeholder = t.phPass;
+        document.getElementById('txt-label-conf-pass').innerText = t.labelConfPass;
+        document.getElementById('confirm_password').placeholder = t.phConfPass;
+        document.getElementById('txt-btn-register').innerText = t.btnRegister;
+        document.getElementById('txt-already-account').innerText = t.alreadyAccount;
+        document.getElementById('txt-link-login').innerText = t.linkLogin;
+        document.getElementById('txt-mic-hint').innerText = t.micHint;
+
+        fetch(`/set-language/${lang}`).catch(err => console.log('Lang sync note:', err));
+    }
+
+    function startVoiceInputForField(fieldId) {
+        const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRec) {
+            alert("Your browser does not support speech recognition. Please use Google Chrome or Edge.");
+            return;
+        }
+
+        const recognizer = new SpeechRec();
+        const locale = I18N_REGISTER[currentSelectedLang]?.speechLocale || "en-IN";
+        recognizer.lang = locale;
+        recognizer.interimResults = false;
+        recognizer.maxAlternatives = 1;
+
+        const micIcon = document.getElementById(`mic-icon-${fieldId}`);
+        if (micIcon) {
+            micIcon.className = "fa-solid fa-microphone text-red-500 animate-pulse";
+        }
+
+        recognizer.onresult = function(event) {
+            const transcript = event.results[0][0].transcript.trim();
+            const input = document.getElementById(fieldId);
+            if (input) {
+                input.value = transcript.replace(/\s+/g, '').toLowerCase();
+                input.focus();
+            }
+        };
+
+        recognizer.onerror = function(event) {
+            console.warn("Speech error:", event.error);
+            if (micIcon) micIcon.className = "fa-solid fa-microphone text-forest-600";
+        };
+
+        recognizer.onend = function() {
+            if (micIcon) micIcon.className = "fa-solid fa-microphone text-forest-600";
+        };
+
+        recognizer.start();
+    }
+
     function togglePasswordVisibility(fieldId, btn) {
         const input = document.getElementById(fieldId);
         const icon = btn.querySelector('i');
@@ -122,11 +451,11 @@
     }
 
     function validateRegisterForm() {
-        const pwd = document.getElementById('password').value;
-        const confirm = document.getElementById('confirm_password').value;
+        const p1 = document.getElementById('password').value;
+        const p2 = document.getElementById('confirm_password').value;
         const feedback = document.getElementById('password_match_feedback');
-
-        if (pwd !== confirm) {
+        if (p1 !== p2) {
+            feedback.innerText = I18N_REGISTER[currentSelectedLang]?.mismatchErr || "Passwords do not match.";
             feedback.classList.remove('hidden');
             return false;
         }
@@ -134,14 +463,8 @@
         return true;
     }
 
-    document.getElementById('confirm_password').addEventListener('input', function() {
-        const pwd = document.getElementById('password').value;
-        const feedback = document.getElementById('password_match_feedback');
-        if (this.value && pwd !== this.value) {
-            feedback.classList.remove('hidden');
-        } else {
-            feedback.classList.add('hidden');
-        }
+    document.addEventListener('DOMContentLoaded', () => {
+        switchRegisterLanguage(currentSelectedLang);
     });
 </script>
 {% endblock %}

@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>KrishiNova - Smart Farming Assistant</title>
+    <meta name="theme-color" content="#15803d">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --primary: #15803d;
+            --primary-dark: #14532d;
+            --primary-light: #22c55e;
+            --bg-light: #f0fdf4;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: linear-gradient(135deg, #052e16 0%, #15803d 50%, #166534 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: #ffffff;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 420px;
+            background: rgba(255, 255, 255, 0.96);
+            backdrop-filter: blur(12px);
+            border-radius: 28px;
+            padding: 32px 24px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+            color: var(--text-dark);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, #22c55e, #15803d, #f59e0b);
+        }
+
+        .logo-wrap {
+            width: 76px;
+            height: 76px;
+            background: linear-gradient(135deg, #15803d, #052e16);
+            border-radius: 22px;
+            margin: 0 auto 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 20px -5px rgba(21, 128, 61, 0.5);
+            animation: pulse-glow 2.5s infinite ease-in-out;
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { transform: scale(1); box-shadow: 0 10px 20px -5px rgba(21, 128, 61, 0.5); }
+            50% { transform: scale(1.05); box-shadow: 0 15px 30px -5px rgba(34, 197, 94, 0.7); }
+        }
+
+        .logo-wrap i {
+            font-size: 38px;
+            color: #4ade80;
+        }
+
+        h1 {
+            font-size: 24px;
+            font-weight: 800;
+            color: #0f172a;
+            letter-spacing: -0.5px;
+            margin-bottom: 4px;
+        }
+
+        .badge-subtitle {
+            display: inline-block;
+            background: #dcfce7;
+            color: #15803d;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            padding: 3px 10px;
+            border-radius: 999px;
+            margin-bottom: 18px;
+        }
+
+        .status-box {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 18px 16px;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .spinner {
+            width: 28px;
+            height: 28px;
+            border: 3px solid #e2e8f0;
+            border-top: 3px solid #15803d;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 12px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .status-text {
+            font-size: 13px;
+            color: #475569;
+            text-align: center;
+            font-weight: 500;
+            line-height: 1.5;
+        }
+
+        .server-presets {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 14px;
+        }
+
+        .btn-preset {
+            background: #ffffff;
+            border: 1.5px solid #cbd5e1;
+            padding: 10px 14px;
+            border-radius: 12px;
+            font-size: 12.5px;
+            font-weight: 600;
+            color: #334155;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: left;
+        }
+
+        .btn-preset:hover, .btn-preset:active {
+            border-color: #15803d;
+            background: #f0fdf4;
+            color: #15803d;
+        }
+
+        .btn-preset i {
+            color: #15803d;
+            font-size: 14px;
+        }
+
+        .input-group {
+            margin-top: 16px;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 11px;
+            font-weight: 700;
+            color: #475569;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 11px 14px;
+            border-radius: 12px;
+            border: 1.5px solid #cbd5e1;
+            font-size: 13px;
+            outline: none;
+            transition: border-color 0.2s;
+            background: #ffffff;
+            color: #0f172a;
+        }
+
+        .input-group input:focus {
+            border-color: #15803d;
+            box-shadow: 0 0 0 3px rgba(21, 128, 61, 0.15);
+        }
+
+        .btn-connect {
+            width: 100%;
+            background: linear-gradient(135deg, #15803d, #166534);
+            color: #ffffff;
+            border: none;
+            border-radius: 14px;
+            padding: 13px 18px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 8px 16px -4px rgba(21, 128, 61, 0.4);
+            transition: transform 0.1s ease, filter 0.2s ease;
+        }
+
+        .btn-connect:active {
+            transform: scale(0.98);
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-top: 20px;
+            padding-top: 18px;
+            border-top: 1px dashed #e2e8f0;
+        }
+
+        .feature-item {
+            text-align: center;
+        }
+
+        .feature-item i {
+            font-size: 16px;
+            color: #15803d;
+            margin-bottom: 4px;
+            display: block;
+        }
+
+        .feature-item span {
+            font-size: 10px;
+            font-weight: 600;
+            color: #64748b;
+        }
+
+        .footer-note {
+            margin-top: 16px;
+            font-size: 11px;
+            color: #94a3b8;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Logo -->
+        <div class="logo-wrap">
+            <i class="fa-solid fa-seedling"></i>
+        </div>
+
+        <h1>KrishiNova</h1>
+        <span class="badge-subtitle">AI Urban Farming & Nursery Assistant</span>
+
+        <!-- Status & Loader -->
+        <div class="status-box" id="statusBox">
+            <div class="spinner" id="loaderSpinner"></div>
+            <div class="status-text" id="statusMessage">
+                Connecting to KrishiNova Assistant...
+            </div>
+        </div>
+
+        <!-- Connection Settings Accordion / Options -->
+        <div id="connectionPanel" style="display: none;">
+            <p style="font-size: 12px; color: #64748b; margin-bottom: 10px; text-align: left; font-weight: 500;">
+                Select or enter your server destination:
+            </p>
+
+            <div class="server-presets">
+                <button type="button" class="btn-preset" onclick="selectPreset('http://10.0.2.2:5000')">
+                    <div>
+                        <strong style="display:block;">Android Studio Emulator</strong>
+                        <small style="color:#64748b;">http://10.0.2.2:5000</small>
+                    </div>
+                    <i class="fa-solid fa-mobile-screen"></i>
+                </button>
+
+                <button type="button" class="btn-preset" onclick="selectPreset('http://127.0.0.1:5000')">
+                    <div>
+                        <strong style="display:block;">Local Device Host</strong>
+                        <small style="color:#64748b;">http://127.0.0.1:5000</small>
+                    </div>
+                    <i class="fa-solid fa-laptop"></i>
+                </button>
+            </div>
+
+            <div class="input-group">
+                <label for="customUrl">Custom Server URL (e.g. Wi-Fi IP or Cloud):</label>
+                <input type="url" id="customUrl" placeholder="http://192.168.1.X:5000 or https://..." value="http://10.0.2.2:5000">
+            </div>
+
+            <button type="button" class="btn-connect" onclick="connectToServer()">
+                <i class="fa-solid fa-bolt"></i>
+                <span>Connect & Launch App</span>
+            </button>
+        </div>
+
+        <!-- Core App Highlights -->
+        <div class="features-grid">
+            <div class="feature-item">
+                <i class="fa-solid fa-camera"></i>
+                <span>AI Leaf Doctor</span>
+            </div>
+            <div class="feature-item">
+                <i class="fa-solid fa-cloud-sun-rain"></i>
+                <span>Weather Alerts</span>
+            </div>
+            <div class="feature-item">
+                <i class="fa-solid fa-microphone"></i>
+                <span>Voice (4 Langs)</span>
+            </div>
+        </div>
+
+        <p class="footer-note">v1.0.0 • Capacitor Android Native Bridge</p>
+    </div>
+
+    <script>
+        const STORAGE_KEY = 'krishinova_server_url';
+        const DEFAULT_EMULATOR_URL = 'http://10.0.2.2:5000';
+
+        function getSavedUrl() {
+            return localStorage.getItem(STORAGE_KEY) || DEFAULT_EMULATOR_URL;
+        }
+
+        function setSavedUrl(url) {
+            localStorage.setItem(STORAGE_KEY, url.trim().replace(/\/+$/, ''));
+        }
+
+        function selectPreset(url) {
+            document.getElementById('customUrl').value = url;
+            connectToServer();
+        }
+
+        async function testAndRedirect(targetUrl) {
+            const cleanUrl = targetUrl.trim().replace(/\/+$/, '');
+            const statusMsg = document.getElementById('statusMessage');
+            const statusBox = document.getElementById('statusBox');
+            const spinner = document.getElementById('loaderSpinner');
+
+            statusMsg.innerHTML = 'Connecting to <b>' + cleanUrl + '</b>...';
+
+            try {
+                // Test connection with a short timeout
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 3500);
+
+                const response = await fetch(cleanUrl + '/login', {
+                    method: 'GET',
+                    mode: 'no-cors',
+                    signal: controller.signal
+                });
+                clearTimeout(timeoutId);
+
+                // If no exception, server is reachable
+                statusMsg.innerHTML = '<span style="color:#15803d; font-weight:700;"><i class="fa-solid fa-circle-check"></i> Connected! Launching KrishiNova...</span>';
+                setSavedUrl(cleanUrl);
+
+                setTimeout(() => {
+                    window.location.href = cleanUrl;
+                }, 400);
+            } catch (err) {
+                // Connection failed or timed out
+                spinner.style.display = 'none';
+                statusMsg.innerHTML = '<span style="color:#b91c1c; font-weight:600;"><i class="fa-solid fa-triangle-exclamation"></i> Server not reachable at:</span><br><code style="font-size:11px; background:#fee2e2; padding:2px 6px; border-radius:4px; color:#991b1b;">' + cleanUrl + '</code><br><span style="font-size:12px; color:#64748b; margin-top:4px; display:inline-block;">Make sure Flask is running (`python app.py`)</span>';
+                document.getElementById('connectionPanel').style.display = 'block';
+            }
+        }
+
+        function connectToServer() {
+            const inputUrl = document.getElementById('customUrl').value;
+            if (!inputUrl) {
+                alert('Please enter a server URL.');
+                return;
+            }
+            document.getElementById('loaderSpinner').style.display = 'block';
+            testAndRedirect(inputUrl);
+        }
+
+        // Initialize on load
+        window.addEventListener('DOMContentLoaded', () => {
+            const initialUrl = getSavedUrl();
+            document.getElementById('customUrl').value = initialUrl;
+
+            // Auto-attempt connection
+            setTimeout(() => {
+                testAndRedirect(initialUrl);
+            }, 500);
+        });
+    </script>
+</body>
+</html>

@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ current_language or 'en' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}AI Urban Farming Assistant{% endblock %}</title>
+    <title>{% block title %}KrishiNova - Urban Farming & Nursery Assistant{% endblock %}</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -44,10 +44,24 @@
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(8px);
         }
+        @media print {
+            nav, footer, .no-print, #floating-voice-btn, #voice-assistant-modal {
+                display: none !important;
+            }
+            body {
+                background: white !important;
+                color: black !important;
+            }
+            main {
+                max-width: 100% !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+        }
     </style>
     {% block extra_head %}{% endblock %}
 </head>
-<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col antialiased">
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col antialiased relative">
 
     <!-- Top Navigation Bar -->
     <nav class="bg-forest-900 text-white shadow-md sticky top-0 z-50">
@@ -55,56 +69,177 @@
             <div class="flex items-center justify-between h-16">
                 <!-- Brand / Logo -->
                 <div class="flex items-center space-x-3">
-                    <a href="{{ url_for('dashboard') if current_user else url_for('login') }}" class="flex items-center space-x-2 group">
+                    <a href="{{ url_for('dashboard') if current_user else url_for('login') }}" class="flex items-center space-x-2.5 group">
                         <div class="w-10 h-10 rounded-xl bg-forest-600 flex items-center justify-center text-white shadow group-hover:scale-105 transition-transform">
                             <i class="fa-solid fa-seedling text-xl"></i>
                         </div>
                         <div>
-                            <span class="text-xl font-bold tracking-tight text-white block leading-tight">FloraAI</span>
-                            <span class="text-xs text-forest-300 font-medium block">Urban Farming Assistant</span>
+                            <span class="text-xl font-bold tracking-tight text-white block leading-tight flex items-center space-x-1.5">
+                                <span>KrishiNova</span>
+                                <span class="text-[10px] bg-amber-400 text-forest-950 font-black px-1.5 py-0.5 rounded uppercase tracking-wider">AI</span>
+                            </span>
+                            <span class="text-xs text-forest-300 font-medium block">
+                                {% if active_mode == 'business' %}
+                                    <span class="text-amber-300 font-semibold"><i class="fa-solid fa-store mr-1"></i> Nursery & Business Mode</span>
+                                {% else %}
+                                    Urban Farming Platform
+                                {% endif %}
+                            </span>
                         </div>
                     </a>
                 </div>
 
                 <!-- Nav Links for Authenticated Users -->
                 {% if current_user %}
-                <div class="hidden md:flex items-center space-x-1 lg:space-x-2">
-                    <a href="{{ url_for('dashboard') }}" class="px-3 py-2 rounded-lg text-sm font-medium hover:bg-forest-800 transition {{ 'bg-forest-800 text-white' if request.endpoint == 'dashboard' else 'text-forest-100 hover:text-white' }}">
-                        <i class="fa-solid fa-gauge-high mr-1.5"></i> Dashboard
-                    </a>
-                    <a href="{{ url_for('plants_view') }}" class="px-3 py-2 rounded-lg text-sm font-medium hover:bg-forest-800 transition {{ 'bg-forest-800 text-white' if request.endpoint == 'plants_view' else 'text-forest-100 hover:text-white' }}">
-                        <i class="fa-solid fa-leaf mr-1.5"></i> My Plants
-                    </a>
-                    <a href="{{ url_for('diagnose') }}" class="px-3 py-2 rounded-lg text-sm font-medium hover:bg-forest-800 transition {{ 'bg-forest-800 text-white' if request.endpoint == 'diagnose' else 'text-forest-100 hover:text-white' }}">
-                        <i class="fa-solid fa-microscope mr-1.5"></i> Diagnose Leaf
-                    </a>
-                    <a href="{{ url_for('weather_view') }}" class="px-3 py-2 rounded-lg text-sm font-medium hover:bg-forest-800 transition {{ 'bg-forest-800 text-white' if request.endpoint == 'weather_view' else 'text-forest-100 hover:text-white' }}">
-                        <i class="fa-solid fa-cloud-sun-rain mr-1.5"></i> Weather & Water
-                    </a>
-                    <a href="{{ url_for('history') }}" class="px-3 py-2 rounded-lg text-sm font-medium hover:bg-forest-800 transition {{ 'bg-forest-800 text-white' if request.endpoint == 'history' else 'text-forest-100 hover:text-white' }}">
-                        <i class="fa-solid fa-notes-medical mr-1.5"></i> Health History
-                    </a>
+                <div class="hidden md:flex items-center space-x-1 lg:space-x-1.5">
+                    {% if active_mode == 'business' %}
+                        <!-- Business Mode Navigation Links -->
+                        <a href="{{ url_for('business_dashboard') }}" class="px-3 py-2 rounded-lg text-sm font-medium hover:bg-forest-800 transition {{ 'bg-forest-800 text-white' if request.endpoint == 'business_dashboard' else 'text-forest-100 hover:text-white' }}">
+                            <i class="fa-solid fa-chart-line mr-1.5 text-amber-300"></i> Biz Dashboard
+                        </a>
+                        <a href="{{ url_for('business_inventory') }}" class="px-3 py-2 rounded-lg text-sm font-medium hover:bg-forest-800 transition {{ 'bg-forest-800 text-white' if request.endpoint == 'business_inventory' else 'text-forest-100 hover:text-white' }}">
+                            <i class="fa-solid fa-boxes-stacked mr-1.5"></i> Inventory
+                        </a>
+                        <a href="{{ url_for('business_batches') }}" class="px-3 py-2 rounded-lg text-sm font-medium hover:bg-forest-800 transition {{ 'bg-forest-800 text-white' if request.endpoint == 'business_batches' else 'text-forest-100 hover:text-white' }}">
+                            <i class="fa-solid fa-layer-group mr-1.5"></i> Batches
+                        </a>
+                        <a href="{{ url_for('business_care_cards') }}" class="px-3 py-2 rounded-lg text-sm font-medium hover:bg-forest-800 transition {{ 'bg-forest-800 text-white' if request.endpoint == 'business_care_cards' else 'text-forest-100 hover:text-white' }}">
+                            <i class="fa-solid fa-id-card-clip mr-1.5"></i> Care Cards
+                        </a>
+                        <a href="{{ url_for('business_reports') }}" class="px-3 py-2 rounded-lg text-sm font-medium hover:bg-forest-800 transition {{ 'bg-forest-800 text-white' if request.endpoint == 'business_reports' else 'text-forest-100 hover:text-white' }}">
+                            <i class="fa-solid fa-file-invoice mr-1.5"></i> Reports
+                        </a>
+                    {% else %}
+                        <!-- Personal Garden Navigation Links -->
+                        <a href="{{ url_for('dashboard') }}" class="px-3 py-2 rounded-lg text-sm font-medium hover:bg-forest-800 transition {{ 'bg-forest-800 text-white' if request.endpoint == 'dashboard' else 'text-forest-100 hover:text-white' }}">
+                            <i class="fa-solid fa-gauge-high mr-1.5"></i> Dashboard
+                        </a>
+                        <a href="{{ url_for('plants_view') }}" class="px-3 py-2 rounded-lg text-sm font-medium hover:bg-forest-800 transition {{ 'bg-forest-800 text-white' if request.endpoint == 'plants_view' else 'text-forest-100 hover:text-white' }}">
+                            <i class="fa-solid fa-leaf mr-1.5"></i> My Plants
+                        </a>
+                        <a href="{{ url_for('diagnose') }}" class="px-3 py-2 rounded-lg text-sm font-medium hover:bg-forest-800 transition {{ 'bg-forest-800 text-white' if request.endpoint == 'diagnose' else 'text-forest-100 hover:text-white' }}">
+                            <i class="fa-solid fa-microscope mr-1.5"></i> Diagnose Leaf
+                        </a>
+                        <a href="{{ url_for('weather_view') }}" class="px-3 py-2 rounded-lg text-sm font-medium hover:bg-forest-800 transition {{ 'bg-forest-800 text-white' if request.endpoint == 'weather_view' else 'text-forest-100 hover:text-white' }}">
+                            <i class="fa-solid fa-cloud-sun mr-1.5"></i> Weather
+                        </a>
+                        <a href="{{ url_for('alerts_center') }}" class="px-3 py-2 rounded-lg text-sm font-medium hover:bg-forest-800 transition {{ 'bg-forest-800 text-white' if request.endpoint == 'alerts_center' else 'text-forest-100 hover:text-white' }}">
+                            <i class="fa-solid fa-bell mr-1.5"></i> Alerts
+                        </a>
+                        <a href="{{ url_for('history') }}" class="px-3 py-2 rounded-lg text-sm font-medium hover:bg-forest-800 transition {{ 'bg-forest-800 text-white' if request.endpoint == 'history' else 'text-forest-100 hover:text-white' }}">
+                            <i class="fa-solid fa-notes-medical mr-1.5"></i> History
+                        </a>
+                    {% endif %}
                 </div>
 
-                <!-- User Profile & Logout -->
-                <div class="flex items-center space-x-4">
+                <!-- Right Controls: Language Selector, Voice, Switcher, Alerts & User Profile -->
+                <div class="flex items-center space-x-2 sm:space-x-3">
+                    
+                    <!-- Language Selector Dropdown -->
+                    <div class="relative inline-block text-left" id="lang-dropdown-wrapper">
+                        <button type="button" onclick="toggleLangDropdown()" class="px-2.5 py-1.5 rounded-xl bg-forest-800 hover:bg-forest-700 text-forest-100 text-xs font-semibold border border-forest-700 transition flex items-center space-x-1.5" title="Select Language / ભાષા / भाषा / భాష">
+                            <span>{{ lang_meta.flag }}</span>
+                            <span class="hidden sm:inline">{{ lang_meta.native }}</span>
+                            <i class="fa-solid fa-chevron-down text-[10px] text-forest-300"></i>
+                        </button>
+                        <div id="lang-dropdown-menu" class="hidden absolute right-0 mt-2 w-44 rounded-2xl shadow-xl bg-white ring-1 ring-black ring-opacity-5 divide-y divide-slate-100 z-50 text-slate-700">
+                            <div class="py-1">
+                                <a href="{{ url_for('set_language', lang='en') }}" class="flex items-center space-x-2 px-3.5 py-2 text-xs hover:bg-slate-50 {{ 'font-bold text-forest-700 bg-forest-50' if current_language == 'en' else '' }}">
+                                    <span>🇬🇧</span>
+                                    <span>English</span>
+                                </a>
+                                <a href="{{ url_for('set_language', lang='hi') }}" class="flex items-center space-x-2 px-3.5 py-2 text-xs hover:bg-slate-50 {{ 'font-bold text-forest-700 bg-forest-50' if current_language == 'hi' else '' }}">
+                                    <span>🇮🇳</span>
+                                    <span>हिन्दी (Hindi)</span>
+                                </a>
+                                <a href="{{ url_for('set_language', lang='gu') }}" class="flex items-center space-x-2 px-3.5 py-2 text-xs hover:bg-slate-50 {{ 'font-bold text-forest-700 bg-forest-50' if current_language == 'gu' else '' }}">
+                                    <span>🇮🇳</span>
+                                    <span>ગુજરાતી (Gujarati)</span>
+                                </a>
+                                <a href="{{ url_for('set_language', lang='te') }}" class="flex items-center space-x-2 px-3.5 py-2 text-xs hover:bg-slate-50 {{ 'font-bold text-forest-700 bg-forest-50' if current_language == 'te' else '' }}">
+                                    <span>🇮🇳</span>
+                                    <span>తెలుగు (Telugu)</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mode Switcher Toggle Button -->
+                    {% if active_mode == 'business' %}
+                    <a href="{{ url_for('switch_mode', mode='personal') }}" title="Switch to Personal Garden Mode"
+                        class="px-2.5 py-1.5 rounded-xl bg-forest-800 hover:bg-forest-700 text-forest-100 text-xs font-semibold border border-forest-600 transition flex items-center space-x-1.5">
+                        <i class="fa-solid fa-seedling text-emerald-400"></i>
+                        <span class="hidden lg:inline">Personal Garden</span>
+                    </a>
+                    {% else %}
+                    <a href="{{ url_for('switch_mode', mode='business') }}" title="Switch to Nursery Business Mode"
+                        class="px-2.5 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 text-xs font-semibold border border-amber-400/40 transition flex items-center space-x-1.5">
+                        <i class="fa-solid fa-store text-amber-400"></i>
+                        <span class="hidden lg:inline">Business Mode</span>
+                    </a>
+                    {% endif %}
+
+                    <!-- Weather Alerts Bell with Unread Badge -->
+                    <a href="{{ url_for('alerts_center') }}" title="Weather Alert Center"
+                        class="relative p-2 rounded-xl bg-forest-800/80 hover:bg-forest-800 text-forest-200 hover:text-white transition">
+                        <i class="fa-solid fa-bell text-sm"></i>
+                        {% if unread_alert_count > 0 %}
+                        <span class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-extrabold w-4 h-4 rounded-full flex items-center justify-center animate-pulse">
+                            {{ unread_alert_count if unread_alert_count < 10 else '9+' }}
+                        </span>
+                        {% endif %}
+                    </a>
+
+                    <!-- User Pill -->
                     <div class="hidden sm:flex items-center space-x-2 bg-forest-800/80 px-3 py-1.5 rounded-full border border-forest-700">
                         <div class="w-6 h-6 rounded-full bg-forest-600 text-white text-xs flex items-center justify-center font-bold uppercase">
                             {{ current_user.username[0] }}
                         </div>
                         <span class="text-xs font-semibold text-forest-100">{{ current_user.username }}</span>
                     </div>
-                    <a href="{{ url_for('logout') }}" title="Logout" class="inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-medium bg-red-950/40 text-red-200 hover:bg-red-900/60 hover:text-white border border-red-800/60 transition">
-                        <i class="fa-solid fa-right-from-bracket mr-1.5"></i> Logout
+
+                    <!-- Logout Button -->
+                    <a href="{{ url_for('logout') }}" title="Logout" class="inline-flex items-center px-2.5 sm:px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium bg-red-950/40 text-red-200 hover:bg-red-900/60 hover:text-white border border-red-800/60 transition">
+                        <i class="fa-solid fa-right-from-bracket mr-1 sm:mr-1.5"></i>
+                        <span class="hidden sm:inline">Logout</span>
                     </a>
                 </div>
                 {% else %}
                 <!-- Unauthenticated Options -->
-                <div class="flex items-center space-x-3">
-                    <a href="{{ url_for('login') }}" class="px-4 py-2 rounded-lg text-sm font-medium text-forest-100 hover:text-white hover:bg-forest-800 transition">
+                <div class="flex items-center space-x-2.5">
+                    <!-- Language Selector for guests -->
+                    <div class="relative inline-block text-left" id="lang-dropdown-wrapper">
+                        <button type="button" onclick="toggleLangDropdown()" class="px-2.5 py-1.5 rounded-xl bg-forest-800 hover:bg-forest-700 text-forest-100 text-xs font-semibold border border-forest-700 transition flex items-center space-x-1.5">
+                            <span>{{ lang_meta.flag }}</span>
+                            <span class="hidden sm:inline">{{ lang_meta.native }}</span>
+                            <i class="fa-solid fa-chevron-down text-[10px] text-forest-300"></i>
+                        </button>
+                        <div id="lang-dropdown-menu" class="hidden absolute right-0 mt-2 w-44 rounded-2xl shadow-xl bg-white ring-1 ring-black ring-opacity-5 divide-y divide-slate-100 z-50 text-slate-700">
+                            <div class="py-1">
+                                <a href="{{ url_for('set_language', lang='en') }}" class="flex items-center space-x-2 px-3.5 py-2 text-xs hover:bg-slate-50 {{ 'font-bold text-forest-700 bg-forest-50' if current_language == 'en' else '' }}">
+                                    <span>🇬🇧</span>
+                                    <span>English</span>
+                                </a>
+                                <a href="{{ url_for('set_language', lang='hi') }}" class="flex items-center space-x-2 px-3.5 py-2 text-xs hover:bg-slate-50 {{ 'font-bold text-forest-700 bg-forest-50' if current_language == 'hi' else '' }}">
+                                    <span>🇮🇳</span>
+                                    <span>हिन्दी (Hindi)</span>
+                                </a>
+                                <a href="{{ url_for('set_language', lang='gu') }}" class="flex items-center space-x-2 px-3.5 py-2 text-xs hover:bg-slate-50 {{ 'font-bold text-forest-700 bg-forest-50' if current_language == 'gu' else '' }}">
+                                    <span>🇮🇳</span>
+                                    <span>ગુજરાતી (Gujarati)</span>
+                                </a>
+                                <a href="{{ url_for('set_language', lang='te') }}" class="flex items-center space-x-2 px-3.5 py-2 text-xs hover:bg-slate-50 {{ 'font-bold text-forest-700 bg-forest-50' if current_language == 'te' else '' }}">
+                                    <span>🇮🇳</span>
+                                    <span>తెలుగు (Telugu)</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <a href="{{ url_for('login') }}" class="px-3.5 py-2 rounded-lg text-xs sm:text-sm font-medium text-forest-100 hover:text-white hover:bg-forest-800 transition">
                         Sign In
                     </a>
-                    <a href="{{ url_for('register') }}" class="px-4 py-2 rounded-lg text-sm font-semibold bg-emerald-500 hover:bg-emerald-400 text-white shadow-sm transition">
+                    <a href="{{ url_for('register') }}" class="px-3.5 py-2 rounded-lg text-xs sm:text-sm font-semibold bg-emerald-500 hover:bg-emerald-400 text-white shadow-sm transition">
                         Create Account
                     </a>
                 </div>
@@ -115,27 +250,48 @@
         <!-- Mobile Navigation Menu -->
         {% if current_user %}
         <div class="md:hidden border-t border-forest-800 px-4 py-2 flex overflow-x-auto space-x-2 text-xs font-medium">
-            <a href="{{ url_for('dashboard') }}" class="px-2.5 py-1.5 rounded whitespace-nowrap {{ 'bg-forest-800 text-white' if request.endpoint == 'dashboard' else 'text-forest-200' }}">
-                <i class="fa-solid fa-gauge-high mr-1"></i> Dashboard
-            </a>
-            <a href="{{ url_for('plants_view') }}" class="px-2.5 py-1.5 rounded whitespace-nowrap {{ 'bg-forest-800 text-white' if request.endpoint == 'plants_view' else 'text-forest-200' }}">
-                <i class="fa-solid fa-leaf mr-1"></i> Plants
-            </a>
-            <a href="{{ url_for('diagnose') }}" class="px-2.5 py-1.5 rounded whitespace-nowrap {{ 'bg-forest-800 text-white' if request.endpoint == 'diagnose' else 'text-forest-200' }}">
-                <i class="fa-solid fa-microscope mr-1"></i> AI Diagnose
-            </a>
-            <a href="{{ url_for('weather_view') }}" class="px-2.5 py-1.5 rounded whitespace-nowrap {{ 'bg-forest-800 text-white' if request.endpoint == 'weather_view' else 'text-forest-200' }}">
-                <i class="fa-solid fa-cloud-sun mr-1"></i> Weather
-            </a>
-            <a href="{{ url_for('history') }}" class="px-2.5 py-1.5 rounded whitespace-nowrap {{ 'bg-forest-800 text-white' if request.endpoint == 'history' else 'text-forest-200' }}">
-                <i class="fa-solid fa-notes-medical mr-1"></i> History
-            </a>
+            {% if active_mode == 'business' %}
+                <a href="{{ url_for('business_dashboard') }}" class="px-2.5 py-1.5 rounded whitespace-nowrap {{ 'bg-forest-800 text-white' if request.endpoint == 'business_dashboard' else 'text-forest-200' }}">
+                    <i class="fa-solid fa-chart-line mr-1"></i> Biz
+                </a>
+                <a href="{{ url_for('business_inventory') }}" class="px-2.5 py-1.5 rounded whitespace-nowrap {{ 'bg-forest-800 text-white' if request.endpoint == 'business_inventory' else 'text-forest-200' }}">
+                    <i class="fa-solid fa-boxes-stacked mr-1"></i> Inventory
+                </a>
+                <a href="{{ url_for('business_batches') }}" class="px-2.5 py-1.5 rounded whitespace-nowrap {{ 'bg-forest-800 text-white' if request.endpoint == 'business_batches' else 'text-forest-200' }}">
+                    <i class="fa-solid fa-layer-group mr-1"></i> Batches
+                </a>
+                <a href="{{ url_for('business_care_cards') }}" class="px-2.5 py-1.5 rounded whitespace-nowrap {{ 'bg-forest-800 text-white' if request.endpoint == 'business_care_cards' else 'text-forest-200' }}">
+                    <i class="fa-solid fa-id-card-clip mr-1"></i> Care Cards
+                </a>
+                <a href="{{ url_for('business_reports') }}" class="px-2.5 py-1.5 rounded whitespace-nowrap {{ 'bg-forest-800 text-white' if request.endpoint == 'business_reports' else 'text-forest-200' }}">
+                    <i class="fa-solid fa-file-invoice mr-1"></i> Reports
+                </a>
+            {% else %}
+                <a href="{{ url_for('dashboard') }}" class="px-2.5 py-1.5 rounded whitespace-nowrap {{ 'bg-forest-800 text-white' if request.endpoint == 'dashboard' else 'text-forest-200' }}">
+                    <i class="fa-solid fa-gauge-high mr-1"></i> Dashboard
+                </a>
+                <a href="{{ url_for('plants_view') }}" class="px-2.5 py-1.5 rounded whitespace-nowrap {{ 'bg-forest-800 text-white' if request.endpoint == 'plants_view' else 'text-forest-200' }}">
+                    <i class="fa-solid fa-leaf mr-1"></i> Plants
+                </a>
+                <a href="{{ url_for('diagnose') }}" class="px-2.5 py-1.5 rounded whitespace-nowrap {{ 'bg-forest-800 text-white' if request.endpoint == 'diagnose' else 'text-forest-200' }}">
+                    <i class="fa-solid fa-microscope mr-1"></i> AI Diagnose
+                </a>
+                <a href="{{ url_for('weather_view') }}" class="px-2.5 py-1.5 rounded whitespace-nowrap {{ 'bg-forest-800 text-white' if request.endpoint == 'weather_view' else 'text-forest-200' }}">
+                    <i class="fa-solid fa-cloud-sun mr-1"></i> Weather
+                </a>
+                <a href="{{ url_for('alerts_center') }}" class="px-2.5 py-1.5 rounded whitespace-nowrap {{ 'bg-forest-800 text-white' if request.endpoint == 'alerts_center' else 'text-forest-200' }}">
+                    <i class="fa-solid fa-bell mr-1"></i> Alerts
+                </a>
+                <a href="{{ url_for('history') }}" class="px-2.5 py-1.5 rounded whitespace-nowrap {{ 'bg-forest-800 text-white' if request.endpoint == 'history' else 'text-forest-200' }}">
+                    <i class="fa-solid fa-notes-medical mr-1"></i> History
+                </a>
+            {% endif %}
         </div>
         {% endif %}
     </nav>
 
     <!-- Global Notification Banner Container -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4 w-full">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4 w-full no-print">
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
@@ -177,20 +333,472 @@
         {% block content %}{% endblock %}
     </main>
 
+    <!-- Floating KrishiNova Voice Assistant Button (Microphone) -->
+    <div class="fixed bottom-6 right-6 z-40 no-print">
+        <button id="floating-voice-btn" onclick="openVoiceModal()"
+            class="bg-gradient-to-r from-forest-700 via-forest-800 to-emerald-700 hover:from-forest-800 hover:to-emerald-800 text-white rounded-full px-4 py-3.5 shadow-2xl flex items-center space-x-3 group transition transform hover:scale-105 active:scale-95 border-2 border-emerald-400/30">
+            <div class="relative w-7 h-7 flex items-center justify-center">
+                <i class="fa-solid fa-microphone text-lg text-emerald-300 group-hover:text-white transition"></i>
+                <span class="absolute -top-0.5 -right-0.5 flex h-2.5 w-2.5">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-400"></span>
+                </span>
+            </div>
+            <div class="text-left hidden sm:block">
+                <span class="block text-[10px] text-emerald-300 uppercase tracking-widest font-black leading-none">Voice AI</span>
+                <span class="block text-xs font-bold text-white leading-tight mt-0.5">{{ lang_meta.ask_btn }}</span>
+            </div>
+        </button>
+    </div>
+
+    <!-- Voice AI Doubt Clarification Modal -->
+    <div id="voice-assistant-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center p-4 no-print">
+        <div class="bg-white rounded-3xl shadow-2xl border border-slate-100 max-w-xl w-full overflow-hidden transform transition-all duration-300 flex flex-col max-h-[90vh]">
+            
+            <!-- Modal Header -->
+            <div class="bg-gradient-to-r from-forest-900 via-forest-800 to-forest-900 p-5 text-white flex items-center justify-between border-b border-forest-800">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-2xl bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center text-emerald-300 text-lg">
+                        <i class="fa-solid fa-microphone-lines"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <h3 class="font-bold text-base text-white">KrishiNova Voice AI Assistant</h3>
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-400/20 text-amber-300 border border-amber-400/30">
+                                {{ lang_meta.native }}
+                            </span>
+                        </div>
+                        <p class="text-xs text-forest-200 mt-0.5">Speak in Gujarati, Hindi, Telugu or English to clarify doubts</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeVoiceModal()" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Modal Language Selection Strip inside Modal -->
+            <div class="bg-slate-50 px-5 py-2.5 border-b border-slate-200 flex items-center justify-between text-xs">
+                <span class="text-slate-500 font-medium">Select Voice Language:</span>
+                <div class="flex items-center gap-1.5">
+                    {% for code, info in supported_languages.items() %}
+                    <button type="button" onclick="setModalVoiceLanguage('{{ code }}')"
+                        id="modal-lang-btn-{{ code }}"
+                        class="px-2.5 py-1 rounded-lg font-bold border transition text-[11px] flex items-center space-x-1 {{ 'bg-forest-700 text-white border-forest-700 shadow-sm' if current_language == code else 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100' }}">
+                        <span>{{ info.flag }}</span>
+                        <span>{{ info.native }}</span>
+                    </button>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Modal Body (Scrollable) -->
+            <div class="p-5 overflow-y-auto space-y-4 flex-1">
+                
+                <!-- Big Central Microphone Action Container -->
+                <div class="bg-gradient-to-br from-forest-50 to-emerald-50/60 rounded-2xl p-6 border border-forest-200 text-center flex flex-col items-center justify-center">
+                    
+                    <button type="button" id="btn-mic-toggle" onclick="toggleMicrophoneListening()"
+                        class="relative w-20 h-20 rounded-full bg-forest-700 hover:bg-forest-800 text-white flex items-center justify-center shadow-lg transition-transform transform active:scale-95 focus:outline-none">
+                        <i id="mic-main-icon" class="fa-solid fa-microphone text-3xl"></i>
+                        <!-- Animated pulsing ring when listening -->
+                        <span id="mic-pulse-ring" class="hidden absolute -inset-2 rounded-full border-4 border-red-500 animate-ping opacity-75"></span>
+                    </button>
+                    
+                    <p id="mic-status-label" class="text-xs font-bold text-forest-900 mt-3">
+                        {{ lang_meta.listening_label if False else "Tap the microphone and speak your question" }}
+                    </p>
+                    <p id="mic-sub-hint" class="text-[11px] text-slate-500 mt-0.5">
+                        Works in Gujarati, Hindi, Telugu & English
+                    </p>
+                </div>
+
+                <!-- Spoken Transcript / Text Question Box -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                        Your Question (Spoken or Typed):
+                    </label>
+                    <div class="relative">
+                        <textarea id="voice-query-input" rows="2"
+                            placeholder="{{ lang_meta.mic_prompt }}"
+                            class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-forest-600 focus:bg-white transition resize-none"></textarea>
+                    </div>
+                    <div class="flex items-center justify-between mt-2">
+                        <button type="button" onclick="clearVoiceQuery()" class="text-xs text-slate-400 hover:text-slate-600 font-medium">
+                            <i class="fa-solid fa-eraser mr-1"></i> Clear
+                        </button>
+                        <button type="button" id="btn-submit-voice-query" onclick="submitVoiceQuery()"
+                            class="px-4 py-2 bg-forest-700 hover:bg-forest-800 text-white rounded-xl text-xs font-bold shadow transition flex items-center space-x-1.5">
+                            <i class="fa-solid fa-paper-plane"></i>
+                            <span>{{ lang_meta.ask_btn }}</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Sample Questions Quick Chips -->
+                <div>
+                    <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">
+                        <i class="fa-solid fa-lightbulb text-amber-500 mr-1"></i> Try Asking:
+                    </span>
+                    <div id="sample-questions-chips" class="flex flex-wrap gap-1.5">
+                        {% for sq in lang_meta.sample_questions %}
+                        <button type="button" onclick="selectSampleQuestion(this.innerText)"
+                            class="text-left text-xs bg-slate-100 hover:bg-forest-50 hover:text-forest-700 text-slate-700 px-3 py-1.5 rounded-lg border border-slate-200 transition">
+                            {{ sq }}
+                        </button>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- AI Response & Audio Playback Area -->
+                <div id="ai-answer-container" class="hidden bg-white rounded-2xl p-4 border border-slate-200 shadow-sm space-y-3">
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+                        <div class="flex items-center space-x-2">
+                            <div class="w-6 h-6 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs">
+                                <i class="fa-solid fa-robot"></i>
+                            </div>
+                            <span id="ai-answer-topic" class="text-xs font-extrabold text-forest-900">Crop Health Advice</span>
+                        </div>
+
+                        <!-- Read Out Loud (TTS Audio) Controls -->
+                        <div class="flex items-center space-x-2">
+                            <button type="button" id="btn-play-speech" onclick="playAnswerSpeech()"
+                                class="px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 rounded-lg text-xs font-bold border border-emerald-200 transition flex items-center space-x-1">
+                                <i class="fa-solid fa-volume-high text-emerald-600"></i>
+                                <span>{{ lang_meta.speak_btn }}</span>
+                            </button>
+                            <button type="button" id="btn-stop-speech" onclick="stopAnswerSpeech()"
+                                class="hidden px-2 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-lg text-xs font-bold border border-rose-200 transition">
+                                <i class="fa-solid fa-stop text-rose-500"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Answer Summary -->
+                    <p id="ai-answer-summary" class="text-xs sm:text-sm font-semibold text-slate-800 leading-relaxed"></p>
+
+                    <!-- Action Steps List -->
+                    <div id="ai-answer-steps" class="space-y-1.5 text-xs text-slate-600 pl-1"></div>
+
+                    <!-- Pro Tip -->
+                    <div class="p-2.5 bg-amber-50 rounded-xl border border-amber-200 text-xs text-amber-900 flex items-start space-x-2">
+                        <i class="fa-solid fa-lightbulb text-amber-500 mt-0.5"></i>
+                        <span id="ai-answer-tip"></span>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
     <!-- Footer -->
-    <footer class="bg-white border-t border-slate-200 py-6 mt-12">
+    <footer class="bg-white border-t border-slate-200 py-6 mt-12 no-print">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 space-y-2 sm:space-y-0">
             <div class="flex items-center space-x-2">
                 <i class="fa-solid fa-seedling text-forest-600"></i>
-                <span class="font-semibold text-slate-700">FloraAI Urban Farming</span>
-                <span>&bull; Powered by MobileNetV2 & Open-Meteo</span>
+                <span class="font-semibold text-slate-700">KrishiNova</span>
+                <span>&bull; Powered by MobileNetV2 & Open-Meteo &bull; Multi-Language Voice AI</span>
             </div>
             <div>
-                &copy; {{ current_year }} AI Urban Farming Assistant. Designed for balconies, terraces & home gardens.
+                &copy; {{ current_year }} KrishiNova. Designed for home gardeners, nurseries & urban farming businesses.
             </div>
         </div>
     </footer>
 
+    <!-- Global Voice Assistant Scripts -->
+    <script>
+        // Language Dropdown Toggle
+        function toggleLangDropdown() {
+            const menu = document.getElementById('lang-dropdown-menu');
+            if (menu) menu.classList.toggle('hidden');
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            const wrapper = document.getElementById('lang-dropdown-wrapper');
+            const menu = document.getElementById('lang-dropdown-menu');
+            if (wrapper && menu && !wrapper.contains(e.target)) {
+                menu.classList.add('hidden');
+            }
+        });
+
+        // ==================== KrishiNova Voice AI Assistant System ====================
+        let currentVoiceLang = "{{ current_language or 'en' }}";
+        let isListening = false;
+        let speechRecognitionInstance = null;
+        let activeSpeechUtterance = null;
+        let lastSpeechText = "";
+
+        const VOICE_LOCALES = {
+            en: "en-IN",
+            hi: "hi-IN",
+            gu: "gu-IN",
+            te: "te-IN"
+        };
+
+        const VOICE_PROMPTS = {
+            en: { tap: "Tap microphone and speak your question", listening: "Listening... Speak your farming doubt now", btnAsk: "Ask KrishiNova AI" },
+            hi: { tap: "माइक दबाएं और अपनी खेती या बागवानी का सवाल बोलें", listening: "सुन रहे हैं... कृपया बोलिए", btnAsk: "कृषिनोवा AI से पूछें" },
+            gu: { tap: "માઇક્રોફોન દબાવો અને તમારી સમસ્યા બોલો", listening: "સાંભળી રહ્યા છીએ... હવે બોલો", btnAsk: "કૃષિનોવા AI ને પૂછો" },
+            te: { tap: "మైక్ నొక్కి మీ వ్యవసాయం సందేహాన్ని మాట్లాడండి", listening: "వింటున్నాము... ఇప్పుడు మాట్లాడండి", btnAsk: "కృషినోవా AI ని అడగండి" }
+        };
+
+        function openVoiceModal() {
+            document.getElementById('voice-assistant-modal').classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
+        }
+
+        function closeVoiceModal() {
+            stopListening();
+            stopAnswerSpeech();
+            document.getElementById('voice-assistant-modal').classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+        }
+
+        function setModalVoiceLanguage(code) {
+            currentVoiceLang = code;
+            // Update active pill in modal
+            ['en', 'hi', 'gu', 'te'].forEach(c => {
+                const b = document.getElementById(`modal-lang-btn-${c}`);
+                if (b) {
+                    if (c === code) {
+                        b.className = "px-2.5 py-1 rounded-lg font-bold border transition text-[11px] flex items-center space-x-1 bg-forest-700 text-white border-forest-700 shadow-sm";
+                    } else {
+                        b.className = "px-2.5 py-1 rounded-lg font-bold border transition text-[11px] flex items-center space-x-1 bg-white text-slate-700 border-slate-200 hover:bg-slate-100";
+                    }
+                }
+            });
+
+            const prompts = VOICE_PROMPTS[code] || VOICE_PROMPTS.en;
+            document.getElementById('mic-status-label').innerText = prompts.tap;
+            document.getElementById('btn-submit-voice-query').querySelector('span').innerText = prompts.btnAsk;
+
+            // Load sample questions for this language
+            fetchSampleQuestionsForLang(code);
+        }
+
+        function toggleMicrophoneListening() {
+            if (isListening) {
+                stopListening();
+            } else {
+                startListening();
+            }
+        }
+
+        function startListening() {
+            const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRec) {
+                alert("Speech recognition is not supported in this browser. Please use Chrome, Edge, or Safari.");
+                return;
+            }
+
+            stopAnswerSpeech();
+            speechRecognitionInstance = new SpeechRec();
+            const loc = VOICE_LOCALES[currentVoiceLang] || "en-IN";
+            speechRecognitionInstance.lang = loc;
+            speechRecognitionInstance.interimResults = true;
+            speechRecognitionInstance.continuous = false;
+
+            const micBtn = document.getElementById('btn-mic-toggle');
+            const micRing = document.getElementById('mic-pulse-ring');
+            const statusLabel = document.getElementById('mic-status-label');
+            const queryBox = document.getElementById('voice-query-input');
+
+            isListening = true;
+            micBtn.className = "relative w-20 h-20 rounded-full bg-red-600 text-white flex items-center justify-center shadow-xl transition-transform transform scale-105";
+            micRing.classList.remove('hidden');
+            statusLabel.innerText = VOICE_PROMPTS[currentVoiceLang]?.listening || "Listening... Speak now";
+            statusLabel.className = "text-xs font-bold text-red-600 mt-3 animate-pulse";
+
+            speechRecognitionInstance.onresult = function(event) {
+                let transcript = "";
+                for (let i = event.resultIndex; i < event.results.length; ++i) {
+                    transcript += event.results[i][0].transcript;
+                }
+                queryBox.value = transcript;
+            };
+
+            speechRecognitionInstance.onerror = function(event) {
+                console.warn("Speech recognition error:", event.error);
+                stopListening();
+            };
+
+            speechRecognitionInstance.onend = function() {
+                stopListening();
+                // Auto-submit if query captured
+                if (queryBox.value.trim().length > 3) {
+                    submitVoiceQuery();
+                }
+            };
+
+            speechRecognitionInstance.start();
+        }
+
+        function stopListening() {
+            isListening = false;
+            if (speechRecognitionInstance) {
+                try { speechRecognitionInstance.stop(); } catch(e){}
+                speechRecognitionInstance = null;
+            }
+            const micBtn = document.getElementById('btn-mic-toggle');
+            const micRing = document.getElementById('mic-pulse-ring');
+            const statusLabel = document.getElementById('mic-status-label');
+
+            if (micBtn) micBtn.className = "relative w-20 h-20 rounded-full bg-forest-700 hover:bg-forest-800 text-white flex items-center justify-center shadow-lg transition-transform transform active:scale-95";
+            if (micRing) micRing.classList.add('hidden');
+            if (statusLabel) {
+                statusLabel.innerText = VOICE_PROMPTS[currentVoiceLang]?.tap || "Tap the microphone and speak your question";
+                statusLabel.className = "text-xs font-bold text-forest-900 mt-3";
+            }
+        }
+
+        function clearVoiceQuery() {
+            document.getElementById('voice-query-input').value = "";
+            document.getElementById('ai-answer-container').classList.add('hidden');
+            stopAnswerSpeech();
+        }
+
+        function selectSampleQuestion(q) {
+            document.getElementById('voice-query-input').value = q.trim();
+            submitVoiceQuery();
+        }
+
+        function submitVoiceQuery() {
+            const queryBox = document.getElementById('voice-query-input');
+            const query = queryBox.value.trim();
+            if (!query) {
+                alert("Please speak or type a gardening doubt first.");
+                return;
+            }
+
+            stopListening();
+            const submitBtn = document.getElementById('btn-submit-voice-query');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> Thinking...`;
+
+            fetch('/api/ai-clarify-doubt', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    query: query,
+                    language: currentVoiceLang
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = `<i class="fa-solid fa-paper-plane mr-1"></i> ${VOICE_PROMPTS[currentVoiceLang]?.btnAsk || 'Ask AI'}`;
+
+                if (data.success) {
+                    displayAiAnswer(data);
+                } else {
+                    alert("Could not process your question. Please try again.");
+                }
+            })
+            .catch(err => {
+                console.error("Doubt clarification error:", err);
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = `<i class="fa-solid fa-paper-plane mr-1"></i> Ask AI`;
+                alert("Network error while connecting to KrishiNova AI.");
+            });
+        }
+
+        function displayAiAnswer(data) {
+            const container = document.getElementById('ai-answer-container');
+            const topic = document.getElementById('ai-answer-topic');
+            const summary = document.getElementById('ai-answer-summary');
+            const stepsDiv = document.getElementById('ai-answer-steps');
+            const tip = document.getElementById('ai-answer-tip');
+
+            topic.innerText = data.detected_topic || "KrishiNova Advice";
+            summary.innerText = data.summary;
+            
+            stepsDiv.innerHTML = "";
+            if (data.action_steps && data.action_steps.length > 0) {
+                data.action_steps.forEach(st => {
+                    const p = document.createElement('p');
+                    p.className = "flex items-start space-x-1.5 py-0.5";
+                    p.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-500 mt-1 text-[10px]"></i><span>${st}</span>`;
+                    stepsDiv.appendChild(p);
+                });
+            }
+
+            tip.innerText = data.tips || "Inspect your plants weekly to catch issues early.";
+            lastSpeechText = data.speech_text || data.summary;
+
+            container.classList.remove('hidden');
+
+            // Auto-play answer audio so users who cannot read can listen immediately
+            playAnswerSpeech();
+        }
+
+        // ==================== Text-to-Speech (TTS) Engine ====================
+        function playAnswerSpeech() {
+            if (!('speechSynthesis' in window)) {
+                alert("Your browser does not support voice playback.");
+                return;
+            }
+
+            stopAnswerSpeech();
+            if (!lastSpeechText) return;
+
+            activeSpeechUtterance = new SpeechSynthesisUtterance(lastSpeechText);
+            const loc = VOICE_LOCALES[currentVoiceLang] || "en-IN";
+            activeSpeechUtterance.lang = loc;
+            activeSpeechUtterance.rate = 0.95; // Clear natural speed
+
+            const btnPlay = document.getElementById('btn-play-speech');
+            const btnStop = document.getElementById('btn-stop-speech');
+
+            activeSpeechUtterance.onstart = function() {
+                if (btnPlay) btnPlay.classList.add('hidden');
+                if (btnStop) btnStop.classList.remove('hidden');
+            };
+
+            activeSpeechUtterance.onend = function() {
+                if (btnPlay) btnPlay.classList.remove('hidden');
+                if (btnStop) btnStop.classList.add('hidden');
+            };
+
+            activeSpeechUtterance.onerror = function() {
+                if (btnPlay) btnPlay.classList.remove('hidden');
+                if (btnStop) btnStop.classList.add('hidden');
+            };
+
+            window.speechSynthesis.speak(activeSpeechUtterance);
+        }
+
+        function stopAnswerSpeech() {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+            }
+            const btnPlay = document.getElementById('btn-play-speech');
+            const btnStop = document.getElementById('btn-stop-speech');
+            if (btnPlay) btnPlay.classList.remove('hidden');
+            if (btnStop) btnStop.classList.add('hidden');
+        }
+
+        function fetchSampleQuestionsForLang(code) {
+            const chipsDiv = document.getElementById('sample-questions-chips');
+            const samplesMap = {
+                en: ["Why are my tomato leaves turning yellow with brown spots?", "How often should I water balcony plants in summer?", "How to prepare organic neem oil spray for whiteflies?"],
+                hi: ["टमाटर के पत्तों पर काले-भूरे धब्बे आ रहे हैं, क्या इलाज करें?", "गर्मी में बालकनी के गमलों में पानी कब और कैसे देना चाहिए?", "मिर्च के पौधों में पत्ती मरोड़ और कीड़ों से बचाव के उपाय?"],
+                gu: ["ટામેટાના પાંદડા પીળા પડી જાય છે અને સુકાઈ રહ્યા છે, શું કરવું?", "ગરમીમાં કૂંડાના છોડને ક્યારે અને કેટલું પાણી આપવું?", "મરચીના છોડમાં મરોડિયા રોગ અને સફેદ માખી માટે દેશી ઉપાય?"],
+                te: ["టమోటా ఆకులు పసుపు రంగులోకి మారి మచ్చలు వస్తున్నాయి, ఏమి చేయాలి?", "వేసవిలో బాల్కనీ కుండీలలో మొక్కలకు ఎప్పుడు నీరు పోయాలి?", "మిరప మొక్కల్లో ముడత తెగులు నివారణకు సహజ మందు ఏమిటి?"]
+            };
+
+            const list = samplesMap[code] || samplesMap.en;
+            chipsDiv.innerHTML = "";
+            list.forEach(q => {
+                const btn = document.createElement('button');
+                btn.type = "button";
+                btn.className = "text-left text-xs bg-slate-100 hover:bg-forest-50 hover:text-forest-700 text-slate-700 px-3 py-1.5 rounded-lg border border-slate-200 transition";
+                btn.innerText = q;
+                btn.onclick = () => selectSampleQuestion(q);
+                chipsDiv.appendChild(btn);
+            });
+        }
+    </script>
     {% block extra_scripts %}{% endblock %}
 </body>
 </html>

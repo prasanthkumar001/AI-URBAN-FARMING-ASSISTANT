@@ -1,0 +1,28 @@
+{
+  "name": "krishinova-app",
+  "version": "1.0.0",
+  "description": "KrishiNova - AI Urban Farming Assistant & Garden Business Platform Android Application",
+  "private": true,
+  "scripts": {
+    "cap:add": "npx cap add android",
+    "cap:sync": "npx cap sync android",
+    "cap:copy": "npx cap copy android",
+    "cap:open": "npx cap open android",
+    "cap:build": "npx cap build android",
+    "cap:run": "npx cap run android"
+  },
+  "dependencies": {
+    "@capacitor/android": "^6.0.0",
+    "@capacitor/app": "^6.0.0",
+    "@capacitor/camera": "^6.0.0",
+    "@capacitor/core": "^6.0.0",
+    "@capacitor/preferences": "^6.0.0",
+    "@capacitor/splash-screen": "^6.0.0",
+    "@capacitor/status-bar": "^6.0.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.0.0"
+  },
+  "author": "KrishiNova Team",
+  "license": "MIT"
+}

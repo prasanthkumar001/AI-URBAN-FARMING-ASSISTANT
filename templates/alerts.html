@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+
+{% block title %}Weather Alert Centre - KrishiNova{% endblock %}
+
+{% block content %}
+<div class="space-y-6 max-w-5xl mx-auto">
+
+    <!-- Header Banner -->
+    <div class="bg-gradient-to-r from-forest-900 to-forest-800 rounded-3xl p-6 sm:p-8 text-white shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <div class="inline-flex items-center space-x-2 bg-amber-500/20 text-amber-200 border border-amber-400/30 px-3 py-1 rounded-full text-xs font-semibold mb-2">
+                <i class="fa-solid fa-bell"></i>
+                <span>Microclimate Threat Detection</span>
+            </div>
+            <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight">Weather Alert Centre</h1>
+            <p class="text-xs sm:text-sm text-forest-200 mt-1 max-w-xl">
+                Continuous real-time threat monitoring from Open-Meteo against your plants' customized temperature and moisture limits.
+            </p>
+        </div>
+
+        <div class="flex items-center space-x-2 self-start sm:self-auto">
+            <form method="POST" action="{{ url_for('alert_mark_all_read') }}">
+                <button type="submit" class="px-3.5 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-semibold border border-white/20 transition">
+                    <i class="fa-solid fa-check-double mr-1.5"></i> Mark All Read
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Severity Filter Strip -->
+    <div class="flex flex-wrap items-center justify-between gap-3 bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
+        <div class="flex items-center space-x-1.5 text-xs font-medium">
+            <span class="text-slate-400 mr-1.5">Filter Severity:</span>
+            <a href="{{ url_for('alerts_center', severity='All', show_resolved='true' if show_resolved else 'false') }}"
+                class="px-3 py-1.5 rounded-lg {{ 'bg-forest-600 text-white' if severity_filter == 'All' else 'bg-slate-100 text-slate-600 hover:bg-slate-200' }}">
+                All
+            </a>
+            <a href="{{ url_for('alerts_center', severity='Critical', show_resolved='true' if show_resolved else 'false') }}"
+                class="px-3 py-1.5 rounded-lg {{ 'bg-red-600 text-white' if severity_filter == 'Critical' else 'bg-red-50 text-red-700 hover:bg-red-100' }}">
+                Critical
+            </a>
+            <a href="{{ url_for('alerts_center', severity='Warning', show_resolved='true' if show_resolved else 'false') }}"
+                class="px-3 py-1.5 rounded-lg {{ 'bg-amber-600 text-white' if severity_filter == 'Warning' else 'bg-amber-50 text-amber-700 hover:bg-amber-100' }}">
+                Warning
+            </a>
+            <a href="{{ url_for('alerts_center', severity='Informational', show_resolved='true' if show_resolved else 'false') }}"
+                class="px-3 py-1.5 rounded-lg {{ 'bg-blue-600 text-white' if severity_filter == 'Informational' else 'bg-blue-50 text-blue-700 hover:bg-blue-100' }}">
+                Informational
+            </a>
+        </div>
+
+        <div class="text-xs">
+            {% if show_resolved %}
+            <a href="{{ url_for('alerts_center', severity=severity_filter, show_resolved='false') }}" class="font-semibold text-forest-700 hover:underline">
+                Hide Resolved Alerts
+            </a>
+            {% else %}
+            <a href="{{ url_for('alerts_center', severity=severity_filter, show_resolved='true') }}" class="font-semibold text-slate-500 hover:underline">
+                Show Resolved History
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Alert Cards List -->
+    {% if alerts %}
+    <div class="space-y-4">
+        {% for alert in alerts %}
+        <div class="bg-white rounded-2xl border p-5 shadow-sm transition hover:shadow-md {% if alert.severity == 'Critical' %}border-red-200 bg-red-50/20{% elif alert.severity == 'Warning' %}border-amber-200 bg-amber-50/20{% else %}border-blue-200 bg-blue-50/20{% endif %}">
+            
+            <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                <div class="flex items-start space-x-3">
+                    <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-base {% if alert.severity == 'Critical' %}bg-red-100 text-red-600{% elif alert.severity == 'Warning' %}bg-amber-100 text-amber-600{% else %}bg-blue-100 text-blue-600{% endif %}">
+                        {% if alert.severity == 'Critical' %}
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                        {% elif alert.severity == 'Warning' %}
+                            <i class="fa-solid fa-cloud-bolt"></i>
+                        {% else %}
+                            <i class="fa-solid fa-info"></i>
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <span class="px-2 py-0.5 rounded text-[11px] font-extrabold uppercase tracking-wider {% if alert.severity == 'Critical' %}bg-red-100 text-red-800{% elif alert.severity == 'Warning' %}bg-amber-100 text-amber-800{% else %}bg-blue-100 text-blue-800{% endif %}">
+                                {{ alert.severity }}
+                            </span>
+                            <h3 class="text-base font-bold text-slate-800">{{ alert.alert_type }}</h3>
+                            {% if alert.is_resolved %}
+                            <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-slate-100 text-slate-600">
+                                <i class="fa-solid fa-check mr-1"></i> Resolved
+                            </span>
+                            {% endif %}
+                        </div>
+
+                        <p class="text-xs font-semibold text-slate-700 mt-1 flex items-center space-x-2">
+                            <span>Affected: <strong>{{ alert.affected_name }}</strong></span>
+                            {% if alert.weather_value %}
+                            <span class="text-slate-400">&bull;</span>
+                            <span class="text-slate-600">{{ alert.weather_value }}</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Resolve and Mark Read Controls -->
+                <div class="flex items-center space-x-2 self-end sm:self-auto">
+                    {% if not alert.is_resolved %}
+                    <form method="POST" action="{{ url_for('alert_mark_resolved', alert_id=alert.id) }}">
+                        <button type="submit" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold shadow-sm transition">
+                            <i class="fa-solid fa-check mr-1"></i> Resolve
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Explanation & Details -->
+            <div class="mt-3 text-xs text-slate-700 bg-slate-50/80 p-3.5 rounded-xl border border-slate-100 space-y-2">
+                <p class="leading-relaxed">{{ alert.explanation }}</p>
+                {% if alert.preferred_range %}
+                <div class="text-[11px] text-slate-500">
+                    <i class="fa-solid fa-sliders mr-1 text-slate-400"></i>
+                    <span>{{ alert.preferred_range }}</span>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Recommended Practical Action -->
+            <div class="mt-3 pt-3 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between text-xs text-slate-600 gap-2">
+                <div class="font-semibold text-forest-800 flex items-center space-x-2">
+                    <i class="fa-solid fa-hand-holding-droplet text-amber-500 text-sm"></i>
+                    <span>Recommended Action: {{ alert.recommended_action }}</span>
+                </div>
+                <div class="text-[11px] text-slate-400 flex items-center space-x-3">
+                    <span><i class="fa-regular fa-clock mr-1"></i> {{ alert.expected_time }}</span>
+                    <span>&bull;</span>
+                    <span>Created: {{ alert.created_at }}</span>
+                </div>
+            </div>
+
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="bg-white rounded-2xl border border-slate-100 p-12 text-center max-w-md mx-auto shadow-sm">
+        <div class="w-16 h-16 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto mb-3 text-2xl">
+            <i class="fa-solid fa-circle-check"></i>
+        </div>
+        <h3 class="text-base font-bold text-slate-800">All Microclimates Normal</h3>
+        <p class="text-xs text-slate-500 mt-1">
+            No active heat, frost, fungal, or waterlogging threats detected for your plants right now.
+        </p>
+        <a href="{{ url_for('dashboard') }}" class="inline-block mt-4 px-4 py-2 bg-forest-600 text-white rounded-xl text-xs font-semibold shadow">
+            Back to Dashboard
+        </a>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

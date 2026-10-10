@@ -1,0 +1,256 @@
+{% extends "base.html" %}
+
+{% block title %}Nursery Business Dashboard - KrishiNova{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- Commercial Business Header -->
+    <div class="bg-gradient-to-r from-slate-900 via-forest-950 to-slate-900 rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden border border-slate-800">
+        <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div>
+                <div class="inline-flex items-center space-x-2 bg-amber-500/20 text-amber-300 border border-amber-400/30 px-3 py-1 rounded-full text-xs font-semibold mb-3">
+                    <i class="fa-solid fa-store"></i>
+                    <span>Commercial Nursery & Garden Business Mode</span>
+                </div>
+                <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight">
+                    {{ business.name }}
+                </h1>
+                <p class="text-xs sm:text-sm text-slate-300 mt-1 max-w-xl">
+                    Inventory valuation, batch disease screening, growing zone weather management, and customer care sheets.
+                </p>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-2.5">
+                <a href="{{ url_for('business_inventory') }}" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-semibold shadow transition flex items-center space-x-1.5">
+                    <i class="fa-solid fa-boxes-stacked"></i>
+                    <span>Manage Stock</span>
+                </a>
+                <a href="{{ url_for('business_care_cards') }}" class="px-3.5 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-semibold border border-white/20 transition flex items-center space-x-1.5">
+                    <i class="fa-solid fa-print"></i>
+                    <span>Print Care Card</span>
+                </a>
+                <a href="{{ url_for('business_reports') }}" class="px-3.5 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-semibold border border-white/20 transition flex items-center space-x-1.5">
+                    <i class="fa-solid fa-file-csv"></i>
+                    <span>Export CSV</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Financial & Operational KPIs -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        
+        <!-- Total Nursery Stock -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm flex items-center justify-between">
+            <div>
+                <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Total Plants in Stock</p>
+                <h3 class="text-2xl font-bold text-slate-800 mt-1">{{ kpis.total_plants_in_stock }} units</h3>
+                <p class="text-xs text-forest-600 font-medium mt-1">
+                    <i class="fa-solid fa-seedling mr-1"></i> Across {{ kpis.total_skus }} SKUs
+                </p>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-forest-50 text-forest-600 flex items-center justify-center text-xl">
+                <i class="fa-solid fa-layer-group"></i>
+            </div>
+        </div>
+
+        <!-- Inventory Retail Value -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm flex items-center justify-between">
+            <div>
+                <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Inventory Retail Value</p>
+                <h3 class="text-2xl font-bold text-slate-800 mt-1">${{ "%.2f"|format(kpis.inventory_retail_value) }}</h3>
+                <p class="text-xs text-slate-400 font-medium mt-1">
+                    Cost basis: ${{ "%.2f"|format(kpis.inventory_cost_value) }}
+                </p>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl">
+                <i class="fa-solid fa-dollar-sign"></i>
+            </div>
+        </div>
+
+        <!-- Estimated Gross Margin -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm flex items-center justify-between">
+            <div>
+                <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Est. Gross Margin *</p>
+                <h3 class="text-2xl font-bold text-emerald-600 mt-1">{{ kpis.estimated_margin_pct }}%</h3>
+                <p class="text-[11px] text-slate-400 font-medium mt-1">
+                    * Estimated from catalog pricing
+                </p>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl">
+                <i class="fa-solid fa-chart-pie"></i>
+            </div>
+        </div>
+
+        <!-- Low Stock Alerts -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm flex items-center justify-between">
+            <div>
+                <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Low Stock Warnings</p>
+                <h3 class="text-2xl font-bold {{ 'text-red-600' if kpis.low_stock_alerts > 0 else 'text-slate-800' }} mt-1">
+                    {{ kpis.low_stock_alerts }} Items
+                </h3>
+                <p class="text-xs font-medium mt-1 {{ 'text-red-500' if kpis.low_stock_alerts > 0 else 'text-emerald-500' }}">
+                    <i class="fa-solid {{ 'fa-triangle-exclamation text-red-500' if kpis.low_stock_alerts > 0 else 'fa-check text-emerald-500' }} mr-1"></i>
+                    {{ 'Reorder recommended' if kpis.low_stock_alerts > 0 else 'Stock levels healthy' }}
+                </p>
+            </div>
+            <div class="w-12 h-12 rounded-xl {{ 'bg-red-50 text-red-500' if kpis.low_stock_alerts > 0 else 'bg-slate-50 text-slate-500' }} flex items-center justify-center text-xl">
+                <i class="fa-solid fa-boxes-packing"></i>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Growing Area Weather Risk Management (Prompt Requirement #4C) -->
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+        <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+            <div>
+                <h3 class="text-base font-bold text-slate-800 flex items-center space-x-2">
+                    <i class="fa-solid fa-cloud-sun text-amber-500"></i>
+                    <span>Growing Zone Weather Risk Management ({{ weather_risks.weather.city }})</span>
+                </h3>
+                <p class="text-xs text-slate-500 mt-0.5">
+                    Live temperature ({{ weather_risks.weather.temperature }}°C), humidity ({{ weather_risks.weather.humidity }}%), and practical facility recommendations.
+                </p>
+            </div>
+            <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-100 text-slate-600">
+                Facility Climate Monitoring
+            </span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {% for zone in weather_risks.zones %}
+            <div class="p-4 rounded-xl border {{ 'border-red-200 bg-red-50/30' if zone.status_color == 'red' else ('border-amber-200 bg-amber-50/30' if zone.status_color == 'amber' else 'border-emerald-200 bg-emerald-50/30') }}">
+                <div class="flex items-center justify-between">
+                    <h4 class="text-sm font-bold text-slate-800">{{ zone.zone }}</h4>
+                    <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider {{ 'bg-red-100 text-red-800' if zone.status_color == 'red' else ('bg-amber-100 text-amber-800' if zone.status_color == 'amber' else 'bg-emerald-100 text-emerald-800') }}">
+                        {{ zone.risk_level }} Risk
+                    </span>
+                </div>
+                <div class="text-[11px] text-slate-500 mt-1">{{ zone.environment }}</div>
+                
+                <div class="mt-2.5 text-xs text-slate-700 font-medium">
+                    <span class="text-slate-500 block text-[11px]">Threat:</span>
+                    {{ zone.threat }}
+                </div>
+
+                <div class="mt-3 pt-2 border-t border-slate-200/60 text-xs font-semibold text-forest-800">
+                    <i class="fa-solid fa-lightbulb text-amber-500 mr-1"></i>
+                    {{ zone.action }}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- 2 Column Layout: Low Stock + Recent Sales / Batch Tracking -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+        <!-- Low Stock Items Alert Table -->
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+            <div class="p-5 border-b border-slate-100 flex items-center justify-between">
+                <h3 class="text-sm font-bold text-slate-800 flex items-center space-x-2">
+                    <i class="fa-solid fa-triangle-exclamation text-amber-500"></i>
+                    <span>Low Stock Reorder Monitor</span>
+                </h3>
+                <a href="{{ url_for('business_inventory', low_stock='1') }}" class="text-xs font-semibold text-forest-700 hover:underline">
+                    View All Stock &rarr;
+                </a>
+            </div>
+
+            {% if low_stock_items %}
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs border-collapse">
+                    <thead>
+                        <tr class="bg-slate-50 text-slate-500 font-semibold uppercase tracking-wider border-b border-slate-100">
+                            <th class="py-2.5 px-4">Plant SKU</th>
+                            <th class="py-2.5 px-4">In Stock</th>
+                            <th class="py-2.5 px-4">Threshold</th>
+                            <th class="py-2.5 px-4 text-right">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        {% for item in low_stock_items[:5] %}
+                        <tr>
+                            <td class="py-3 px-4 font-bold text-slate-800">
+                                {{ item.plant_name }}
+                                <div class="text-[10px] text-slate-400 font-normal">{{ item.species or item.category }}</div>
+                            </td>
+                            <td class="py-3 px-4">
+                                <span class="px-2 py-0.5 rounded-full font-bold bg-red-100 text-red-800">
+                                    {{ item.quantity }} left
+                                </span>
+                            </td>
+                            <td class="py-3 px-4 text-slate-600 font-medium">
+                                {{ item.low_stock_threshold }} units
+                            </td>
+                            <td class="py-3 px-4 text-right">
+                                <a href="{{ url_for('business_inventory', search=item.plant_name) }}" class="text-forest-700 font-semibold underline">
+                                    Restock
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="p-8 text-center text-xs text-slate-400">
+                <i class="fa-solid fa-boxes-packing text-2xl text-slate-300 mb-2 block"></i>
+                All inventory quantities are above reorder thresholds.
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Commercial Batches & Health Review -->
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+            <div class="p-5 border-b border-slate-100 flex items-center justify-between">
+                <h3 class="text-sm font-bold text-slate-800 flex items-center space-x-2">
+                    <i class="fa-solid fa-layer-group text-forest-600"></i>
+                    <span>Growing Batches & Manager Screening</span>
+                </h3>
+                <a href="{{ url_for('business_batches') }}" class="text-xs font-semibold text-forest-700 hover:underline">
+                    All Batches &rarr;
+                </a>
+            </div>
+
+            {% if batches %}
+            <div class="p-4 space-y-3">
+                {% for b in batches %}
+                <div class="p-3 rounded-xl bg-slate-50 border border-slate-100 text-xs flex items-center justify-between">
+                    <div>
+                        <span class="font-bold text-slate-800">{{ b.batch_name }}</span>
+                        <div class="text-slate-500 text-[11px] mt-0.5">
+                            {{ b.plant_type }} &bull; {{ b.growing_area }} &bull; {{ b.quantity }} units
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        {% if b.manager_reviewed %}
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                            <i class="fa-solid fa-check mr-1"></i> Reviewed
+                        </span>
+                        {% else %}
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">
+                            Inspection Due
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="p-8 text-center text-xs text-slate-400">
+                <i class="fa-solid fa-leaf text-2xl text-slate-300 mb-2 block"></i>
+                No plant batches registered yet.<br>
+                <a href="{{ url_for('business_batches') }}" class="text-forest-600 font-semibold underline mt-1 inline-block">
+                    Register a Growing Batch
+                </a>
+            </div>
+            {% endif %}
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}

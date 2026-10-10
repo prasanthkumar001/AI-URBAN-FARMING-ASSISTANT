@@ -1,0 +1,286 @@
+{% extends "base.html" %}
+
+{% block title %}Business Reports & CSV Exports - {{ business.name }}{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- Header Section -->
+    <div class="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div>
+            <div class="inline-flex items-center space-x-2 bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full text-xs font-semibold mb-2">
+                <i class="fa-solid fa-chart-column"></i>
+                <span>Nursery Operations & Analytics</span>
+            </div>
+            <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-800">
+                Business Reports & Data Exports
+            </h1>
+            <p class="text-xs sm:text-sm text-slate-500 mt-1 max-w-xl">
+                Commercial nursery inventory valuation, realized sales logs, low-stock reorder forecasts, and 1-click CSV data exports for spreadsheets and accounting.
+            </p>
+        </div>
+
+        <!-- Quick 1-Click CSV Download Dropdown / Buttons -->
+        <div class="flex flex-wrap items-center gap-2.5">
+            <a href="{{ url_for('business_export_report', type='inventory') }}" class="px-3.5 py-2.5 bg-forest-700 hover:bg-forest-800 text-white rounded-xl text-xs font-semibold shadow transition flex items-center space-x-1.5">
+                <i class="fa-solid fa-file-csv"></i>
+                <span>Inventory CSV</span>
+            </a>
+            <a href="{{ url_for('business_export_report', type='sales') }}" class="px-3.5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-semibold shadow transition flex items-center space-x-1.5">
+                <i class="fa-solid fa-file-invoice-dollar"></i>
+                <span>Sales CSV</span>
+            </a>
+            <a href="{{ url_for('business_export_report', type='low_stock') }}" class="px-3.5 py-2.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-semibold shadow transition flex items-center space-x-1.5">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <span>Low Stock CSV</span>
+            </a>
+            <a href="{{ url_for('business_export_report', type='batches') }}" class="px-3.5 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-semibold shadow transition flex items-center space-x-1.5">
+                <i class="fa-solid fa-layer-group"></i>
+                <span>Batches CSV</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Financial Performance & Inventory Valuation Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        
+        <!-- Inventory Retail Value -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Inventory Retail Value</span>
+                <div class="w-9 h-9 rounded-xl bg-forest-50 text-forest-700 flex items-center justify-center text-sm">
+                    <i class="fa-solid fa-tag"></i>
+                </div>
+            </div>
+            <h3 class="text-2xl font-bold text-slate-800 mt-2">${{ "%.2f"|format(kpis.inventory_retail_value) }}</h3>
+            <p class="text-xs text-slate-500 mt-1">
+                Cost Basis: <span class="font-semibold text-slate-700">${{ "%.2f"|format(kpis.inventory_cost_value) }}</span>
+            </p>
+        </div>
+
+        <!-- Estimated Gross Margin -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Est. Catalog Margin *</span>
+                <div class="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-sm">
+                    <i class="fa-solid fa-chart-pie"></i>
+                </div>
+            </div>
+            <h3 class="text-2xl font-bold text-emerald-600 mt-2">{{ kpis.estimated_margin_pct }}%</h3>
+            <p class="text-[11px] text-slate-400 mt-1">
+                Unrealized profit: ${{ "%.2f"|format(kpis.inventory_retail_value - kpis.inventory_cost_value) }}
+            </p>
+        </div>
+
+        <!-- Realized Sales Revenue -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Realized Revenue</span>
+                <div class="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-sm">
+                    <i class="fa-solid fa-receipt"></i>
+                </div>
+            </div>
+            <h3 class="text-2xl font-bold text-blue-700 mt-2">
+                ${{ "%.2f"|format(kpis.total_sales_revenue|default(0.0)) }}
+            </h3>
+            <p class="text-xs text-slate-500 mt-1">
+                From {{ sales|length }} recorded transactions
+            </p>
+        </div>
+
+        <!-- Total Plant Headcount -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Live Inventory Units</span>
+                <div class="w-9 h-9 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center text-sm">
+                    <i class="fa-solid fa-boxes-stacked"></i>
+                </div>
+            </div>
+            <h3 class="text-2xl font-bold text-slate-800 mt-2">{{ kpis.total_plants_in_stock }} Plants</h3>
+            <p class="text-xs text-slate-500 mt-1">
+                Across {{ kpis.total_skus }} distinct catalogue varieties
+            </p>
+        </div>
+
+    </div>
+
+    <!-- Disclaimer Alert -->
+    <div class="bg-amber-50 rounded-2xl p-4 border border-amber-200 flex items-start space-x-3">
+        <i class="fa-solid fa-circle-info text-amber-600 text-lg flex-shrink-0 mt-0.5"></i>
+        <div class="text-xs text-amber-900 leading-relaxed">
+            <strong>Financial Disclaimer & Estimation Notice:</strong>
+            Catalog margin and unrealized profit figures are estimates based on catalog selling prices and recorded wholesale purchase costs. Actual realized income is logged exclusively when sales movements are recorded in the system.
+        </div>
+    </div>
+
+    <!-- Downloadable CSV Export Hub Cards -->
+    <div class="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-sm space-y-4">
+        <div class="flex items-center justify-between">
+            <h2 class="text-lg font-bold text-slate-800">
+                <i class="fa-solid fa-cloud-arrow-down text-forest-700 mr-2"></i>
+                Downloadable CSV Reports Hub
+            </h2>
+            <span class="text-xs text-slate-400 font-medium">Compatible with Microsoft Excel, Google Sheets, & LibreOffice</span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+            
+            <!-- Report 1: Full Inventory -->
+            <div class="p-5 rounded-2xl bg-slate-50 border border-slate-200/80 hover:border-forest-500/50 transition flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-forest-700 uppercase tracking-wider">Complete Stock List</span>
+                        <span class="px-2.5 py-0.5 bg-forest-100 text-forest-800 rounded-full text-[11px] font-semibold">.CSV</span>
+                    </div>
+                    <h3 class="text-base font-bold text-slate-800 mt-1.5">Master Nursery Inventory Report</h3>
+                    <p class="text-xs text-slate-500 mt-1 leading-relaxed">
+                        Full catalogue with SKU codes, plant species, stock on hand, cost basis, selling prices, location zones, and current health status.
+                    </p>
+                </div>
+                <div class="mt-4 pt-3 border-t border-slate-200/60 flex items-center justify-between">
+                    <span class="text-xs text-slate-500">{{ inventory|length }} items logged</span>
+                    <a href="{{ url_for('business_export_report', type='inventory') }}" class="px-3.5 py-1.5 bg-forest-700 hover:bg-forest-800 text-white rounded-lg text-xs font-semibold shadow-sm transition inline-flex items-center space-x-1.5">
+                        <i class="fa-solid fa-download"></i>
+                        <span>Download CSV</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Report 2: Low-Stock Reorder -->
+            <div class="p-5 rounded-2xl bg-slate-50 border border-slate-200/80 hover:border-amber-500/50 transition flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-amber-600 uppercase tracking-wider">Procurement Forecast</span>
+                        <span class="px-2.5 py-0.5 bg-amber-100 text-amber-800 rounded-full text-[11px] font-semibold">.CSV</span>
+                    </div>
+                    <h3 class="text-base font-bold text-slate-800 mt-1.5">Low-Stock & Reorder Urgent Sheet</h3>
+                    <p class="text-xs text-slate-500 mt-1 leading-relaxed">
+                        Identifies all plants falling below safety buffer limits, recommended reorder quantities, supplier contacts, and unit procurement costs.
+                    </p>
+                </div>
+                <div class="mt-4 pt-3 border-t border-slate-200/60 flex items-center justify-between">
+                    <span class="text-xs text-slate-500">{{ kpis.low_stock_alerts }} warnings</span>
+                    <a href="{{ url_for('business_export_report', type='low_stock') }}" class="px-3.5 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs font-semibold shadow-sm transition inline-flex items-center space-x-1.5">
+                        <i class="fa-solid fa-download"></i>
+                        <span>Download CSV</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Report 3: Commercial Batches Health -->
+            <div class="p-5 rounded-2xl bg-slate-50 border border-slate-200/80 hover:border-purple-500/50 transition flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-purple-700 uppercase tracking-wider">Quality Assurance</span>
+                        <span class="px-2.5 py-0.5 bg-purple-100 text-purple-800 rounded-full text-[11px] font-semibold">.CSV</span>
+                    </div>
+                    <h3 class="text-base font-bold text-slate-800 mt-1.5">Commercial Batch Health & Sign-off Log</h3>
+                    <p class="text-xs text-slate-500 mt-1 leading-relaxed">
+                        Log of commercial propagation trays, greenhouse growing areas, plant counts, manager sign-offs, and health inspection remarks.
+                    </p>
+                </div>
+                <div class="mt-4 pt-3 border-t border-slate-200/60 flex items-center justify-between">
+                    <span class="text-xs text-slate-500">{{ kpis.active_batches }} active batches</span>
+                    <a href="{{ url_for('business_export_report', type='batches') }}" class="px-3.5 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs font-semibold shadow-sm transition inline-flex items-center space-x-1.5">
+                        <i class="fa-solid fa-download"></i>
+                        <span>Download CSV</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Report 4: Sales History -->
+            <div class="p-5 rounded-2xl bg-slate-50 border border-slate-200/80 hover:border-blue-500/50 transition flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-blue-700 uppercase tracking-wider">Revenue Audit</span>
+                        <span class="px-2.5 py-0.5 bg-blue-100 text-blue-800 rounded-full text-[11px] font-semibold">.CSV</span>
+                    </div>
+                    <h3 class="text-base font-bold text-slate-800 mt-1.5">Sales & Inventory Reductions Log</h3>
+                    <p class="text-xs text-slate-500 mt-1 leading-relaxed">
+                        Detailed transactional sales records showing unit pricing, realized revenues, estimated cost of goods sold, profit margins, and notes.
+                    </p>
+                </div>
+                <div class="mt-4 pt-3 border-t border-slate-200/60 flex items-center justify-between">
+                    <span class="text-xs text-slate-500">{{ sales|length }} records logged</span>
+                    <a href="{{ url_for('business_export_report', type='sales') }}" class="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold shadow-sm transition inline-flex items-center space-x-1.5">
+                        <i class="fa-solid fa-download"></i>
+                        <span>Download CSV</span>
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Recent Sales Audit Table -->
+    <div class="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-sm space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div>
+                <h2 class="text-lg font-bold text-slate-800">
+                    <i class="fa-solid fa-cash-register text-emerald-600 mr-2"></i>
+                    Recorded Nursery Sales Transactions
+                </h2>
+                <p class="text-xs text-slate-400 mt-0.5">Most recent sales events recorded through inventory stock adjustments.</p>
+            </div>
+            
+            <a href="{{ url_for('business_inventory') }}" class="text-xs text-forest-700 hover:text-forest-800 font-semibold inline-flex items-center space-x-1 self-start sm:self-auto">
+                <span>Record New Sale via Inventory</span>
+                <i class="fa-solid fa-arrow-right"></i>
+            </a>
+        </div>
+
+        {% if sales %}
+        <div class="overflow-x-auto rounded-xl border border-slate-200">
+            <table class="w-full text-left text-xs">
+                <thead class="bg-slate-50 text-slate-500 uppercase font-semibold text-[11px] border-b border-slate-200">
+                    <tr>
+                        <th class="py-3 px-4">Date</th>
+                        <th class="py-3 px-4">Item Sold</th>
+                        <th class="py-3 px-4 text-center">Qty</th>
+                        <th class="py-3 px-4 text-right">Unit Price</th>
+                        <th class="py-3 px-4 text-right">Total Revenue</th>
+                        <th class="py-3 px-4 text-right">Est. COGS</th>
+                        <th class="py-3 px-4 text-right">Est. Profit</th>
+                        <th class="py-3 px-4">Recorded By</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 text-slate-700">
+                    {% for s in sales %}
+                    <tr class="hover:bg-slate-50/80 transition">
+                        <td class="py-3 px-4 font-medium text-slate-500">{{ s.sale_date[:10] }}</td>
+                        <td class="py-3 px-4 font-bold text-slate-800">
+                            {{ s.plant_name }}
+                            {% if s.species %}<span class="block text-[11px] font-normal text-slate-400 italic">{{ s.species }}</span>{% endif %}
+                        </td>
+                        <td class="py-3 px-4 text-center font-bold">{{ s.quantity }}</td>
+                        <td class="py-3 px-4 text-right">${{ "%.2f"|format(s.unit_price) }}</td>
+                        <td class="py-3 px-4 text-right font-bold text-emerald-600">${{ "%.2f"|format(s.total_amount) }}</td>
+                        <td class="py-3 px-4 text-right text-slate-400">${{ "%.2f"|format(s.estimated_cogs) }}</td>
+                        <td class="py-3 px-4 text-right font-semibold text-slate-800">
+                            ${{ "%.2f"|format(s.total_amount - s.estimated_cogs) }}
+                        </td>
+                        <td class="py-3 px-4 text-slate-500">{{ s.recorded_by or 'Staff' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="py-12 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+            <div class="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-3 text-lg">
+                <i class="fa-solid fa-receipt"></i>
+            </div>
+            <h3 class="text-sm font-bold text-slate-700">No Sales Recorded Yet</h3>
+            <p class="text-xs text-slate-400 max-w-sm mx-auto mt-1">
+                When you record a customer purchase from the Inventory screen ("Adjust Stock" &rarr; "Sale"), transactions and profit analytics appear here automatically.
+            </p>
+            <a href="{{ url_for('business_inventory') }}" class="mt-4 inline-flex items-center space-x-1.5 px-4 py-2 bg-forest-700 text-white rounded-xl text-xs font-semibold hover:bg-forest-800 transition">
+                <i class="fa-solid fa-boxes-stacked"></i>
+                <span>Go to Inventory</span>
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}
